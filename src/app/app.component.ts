@@ -16,8 +16,17 @@ export class AppComponent {
 
     if (file === undefined) return;
 
-    this.transformService.transform(file).then(data => {
-      debugger;
+    this.transformService.transform(file).then((data: ArrayBuffer) => {
+      const outputBlob = new Blob([data], { type: `txt/xml` });
+      const outputBlobURL = URL.createObjectURL(outputBlob);
+
+      const linkELement = document.createElement(`a`);
+      linkELement.href = outputBlobURL;
+      linkELement.download = `test-${new Date().toISOString()}.plmxml`;
+      linkELement.click();
+
+      linkELement.remove();
+      URL.revokeObjectURL(outputBlobURL);
     });
   }
 }
