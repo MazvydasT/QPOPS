@@ -115,20 +115,25 @@ addEventListener('message', ({ data }) => {
     `</PLMXML>`
   ];
 
-  const outputArrayBuffer = new TextEncoder().encode(outputDocumentLines.join(`\n`)).buffer;
+  const outputArrayBuffer = new TextEncoder().encode(outputDocumentLines.join(``)).buffer;
 
   postMessage(outputArrayBuffer, [outputArrayBuffer]);
 });
 
-function item2XML(item: IItem, id: number[], xmlElements: string[]) {
+const item2XML = (item: IItem, id: number[], xmlElements: string[], includeEmpty: boolean = false) => {
   const idValue = ++id[0];
   const instanceId = `${idValue}i`;
   const viewId = `${idValue}v`;
 
-  const childInstanceIds = (item.children ?? []).map(child => item2XML(child, id, xmlElements));
+  const childInstanceIds = (item.children ?? []).map(child => item2XML(child, id, xmlElements)).filter(childId => childId !== null);
+
+  if (!includeEmpty && !item.filePath && !childInstanceIds.length)
+    return null;
+
+  const instanceRefs = `${childInstanceIds.length ? `instanceRefs="${childInstanceIds.join(' ')}" ` : ``}`;
 
   const instanceXML = `<ProductInstance id="${instanceId}" partRef="#${viewId}"/>`;
-  const viewXML = `<ProductRevisionView id="${viewId}" name="${item.title}" ${childInstanceIds.length ? `instanceRefs="${childInstanceIds.join(' ')}" ` : ``}type="${childInstanceIds.length ? `assembly` : `solid`}"/>`
+  const viewXML = `<ProductRevisionView id="${viewId}" name="${item.title}" ${instanceRefs}type="${!item.filePath ? `assembly` : `solid`}"/>`
 
   xmlElements.unshift(instanceXML, viewXML);
 
