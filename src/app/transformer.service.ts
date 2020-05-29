@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { IInput } from './input';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +22,12 @@ export class TransformerService {
           worker.terminate();
         };
 
-        worker.postMessage(arrayBuffer, [arrayBuffer]);
+        const input: IInput = {
+          arrayBuffer: arrayBuffer,
+          sysRootPath: `P:\\sys_root`
+        }
+
+        worker.postMessage(input, [arrayBuffer]);
       });
     });
   }

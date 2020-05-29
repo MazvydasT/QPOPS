@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import { strict } from "assert";
+import { IInput } from "./input";
 
 interface IPMUpdateObject {
   type: string,
@@ -10,16 +10,16 @@ interface IPMUpdateObject {
 interface IItem {
   title: string,
   children?: IItem[],
-  transformationMatrix?: string,
+  transformationMatrix?: string[],
   filePath?: string,
 
   pmUpdateObject: IPMUpdateObject
 }
 
-addEventListener('message', ({ data }) => {
+addEventListener('message', ({ data }: { data: IInput }) => {
   const textDecoder = new TextDecoder(`windows-1252`);
 
-  const text = textDecoder.decode(data);
+  const text = textDecoder.decode(data.arrayBuffer);
 
   const objectsData = text.split(`PM_UPDATE `);
 
@@ -79,6 +79,7 @@ addEventListener('message', ({ data }) => {
     const children = attributes.get(`children`);
     const inputFlows = attributes.get(`inputFlows`);
     const prototype = attributes.get(`prototype`);
+    const layout = attributes.get(`layout`);
 
     if (children !== undefined)
       item.children = children.split(`,`).map(childId => items.get(childId)).filter(item => item !== undefined);
@@ -93,12 +94,20 @@ addEventListener('message', ({ data }) => {
         )?.attributes.get(`file`)
       )?.attributes.get(`fileName`);
 
+    if (layout) {
+      const layoutObject = supportingPMUpdateObjects.get(layout);
+      const location = layoutObject?.attributes.get(`location`) ?? `0,0,0`;
+      const rotation = layoutObject?.attributes.get(`rotation`) ?? `0,0,0`;
+
+      throw `not finished`;
+    }
+
     item.pmUpdateObject = null;
   }
 
   const instanceGraphContent = new Array<string>();
 
-  const rootRefs = item2XML(items.get(rootId), [1], instanceGraphContent);
+  const rootRefs = item2XML(items.get(rootId), data.sysRootPath, [1], instanceGraphContent, data?.options?.includeBranchesWithoutCAD ?? false);
 
   const currentTime = new Date();
   const timeString = `${currentTime.getHours().toString().padStart(2, `0`)}:${currentTime.getMinutes().toString().padStart(2, `0`)}:${currentTime.getSeconds().toString().padStart(2, `0`)}`;
@@ -120,20 +129,43 @@ addEventListener('message', ({ data }) => {
   postMessage(outputArrayBuffer, [outputArrayBuffer]);
 });
 
-const item2XML = (item: IItem, id: number[], xmlElements: string[], includeEmpty: boolean = false) => {
-  const idValue = ++id[0];
-  const instanceId = `${idValue}i`;
-  const viewId = `${idValue}v`;
+const doubleBackSlashRegExp = /(?<!:)\\{2,}/g;
+const doubleForwardSlashRegExp = /\//g;
 
-  const childInstanceIds = (item.children ?? []).map(child => item2XML(child, id, xmlElements)).filter(childId => childId !== null);
+const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: string[], includeEmpty: boolean = false) => {
+  const childInstanceIds = (item.children ?? []).map(child => item2XML(child, sysRootPath, id, xmlElements)).filter(childId => childId !== null);
 
   if (!includeEmpty && !item.filePath && !childInstanceIds.length)
     return null;
 
+  const idValue = ++id[0];
+  const instanceId = `${idValue}i`;
+  const viewId = `${idValue}v`;
+
   const instanceRefs = `${childInstanceIds.length ? `instanceRefs="${childInstanceIds.join(' ')}" ` : ``}`;
 
   const instanceXML = `<ProductInstance id="${instanceId}" partRef="#${viewId}"/>`;
-  const viewXML = `<ProductRevisionView id="${viewId}" name="${item.title}" ${instanceRefs}type="${!item.filePath ? `assembly` : `solid`}"/>`
+
+  let filePath = item.filePath;
+  let representationXML = ``;
+
+  if (filePath) {
+    if (filePath.startsWith(`"`) && filePath.endsWith(`"`)) filePath = filePath.substring(1, filePath.length - 1);
+
+    let location = `${filePath.replace(`#`, sysRootPath).replace(doubleForwardSlashRegExp, `\\`).replace(doubleBackSlashRegExp, `\\`)}`;
+
+    if (location.endsWith(`.cojt`)) {
+      const fullFilePathSegments = location.split(`\\`);
+      const fileName = fullFilePathSegments[fullFilePathSegments.length - 1];
+      const fileNameSegments = fileName.split(`.`);
+      const fileNameWithoutExtention = fileNameSegments.slice(0, fileNameSegments.length - 1).join(`.`);
+      location += `\\${fileNameWithoutExtention}.jt`;
+    }
+
+    representationXML = `<Representation format="JT" location="${location}"/>`;
+  }
+
+  const viewXML = `<ProductRevisionView id="${viewId}" name="${item.title}" ${instanceRefs}type="${!filePath ? `assembly` : `solid`}">${representationXML}</ProductRevisionView>`
 
   xmlElements.unshift(instanceXML, viewXML);
 
