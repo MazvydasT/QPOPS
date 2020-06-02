@@ -1,122 +1,171 @@
 /// <reference lib="webworker" />
 
-import { IInput } from "./input";
+import * as Three from 'three/build/three.js';
 
-interface IPMUpdateObject {
-  type: string,
-  attributes: Map<string, string>
-}
+import { parse, X2jOptions } from 'fast-xml-parser';
+
+import { IInput } from './input';
 
 interface IItem {
   title: string,
   children?: IItem[],
-  transformationMatrix?: string[],
+  transformationMatrix?: string,
   filePath?: string,
 
-  pmUpdateObject: IPMUpdateObject
+  dataObject: IDataObject
 }
 
-addEventListener('message', ({ data }: { data: IInput }) => {
-  const textDecoder = new TextDecoder(`windows-1252`);
+interface IDataObject {
+  '@_ExternalId': string,
 
-  const text = textDecoder.decode(data.arrayBuffer);
+  name?: string,
+  number?: string,
+  catalogNumber?: string,
 
-  const objectsData = text.split(`PM_UPDATE `);
+  children?: { item?: string[] },
+  inputFlows?: { item?: string[] },
+  parts?: { item?: string[] },
+
+  prototype?: string,
+  layout?: string,
+  threeDRep?: string,
+  file?: string,
+  fileName?: string,
+
+  NodeInfo?: {
+    absoluteLocation?: {
+      rx: string,
+      ry: string,
+      rz: string,
+      x: string,
+      y: string,
+      z: string
+    }
+  }
+}
+
+addEventListener(`message`, ({ data }: { data: IInput }) => {
+  const exludedNodes = [
+    `Human`,
+    `PmAttachment`,
+    `PmCompoundResource`,
+    `PmImage`,
+    `PmPartPrototypeUsage`,
+    `PmResourcePlaceholder`,
+    `PmSource`,
+    `PmToolInstance`,
+    `PmToolPrototype`,
+    `PmVariantSet`,
+    `ScoreableOperation`,
+    `Station_Geometry`
+  ];
+
+  const text = new TextDecoder().decode(data.arrayBuffer);
+
+  const parseOptions: Partial<X2jOptions> = {
+    ignoreAttributes: false,
+    stopNodes: exludedNodes,
+    parseNodeValue: false,
+    attrValueProcessor: (attrValue: any, attrName: string) => attrName === `ExternalId` ? attrValue : null
+  };
+  const objects = parse(text, parseOptions)?.Data?.Objects as { [key: string]: IDataObject[] };
 
   const items = new Map<string, IItem>();
-  const supportingPMUpdateObjects = new Map<string, IPMUpdateObject>();
+  const supportingDataObjects = new Map<string, IDataObject>();
 
   let rootId: string = null;
 
-  for (let objectDataIndex = 0, objectsDataLength = objectsData.length; objectDataIndex < objectsDataLength; ++objectDataIndex) {
-    const objectData = objectsData[objectDataIndex].trim();
+  for (let [objectType, dataObjects] of Object.entries(objects)) {
+    if (exludedNodes.indexOf(objectType) > -1) continue;
 
-    const attributeOpeningBracendex = objectData.indexOf(`{`);
+    if (!Array.isArray(dataObjects)) dataObjects = [dataObjects];
 
-    if (objectData.length === 0 || attributeOpeningBracendex < 0) continue;
+    for (let i = 0, c = dataObjects.length; i < c; ++i) {
+      const dataObject = dataObjects[i];
+      const id = dataObject["@_ExternalId"];
 
-    const [type, id] = objectData.substr(0, attributeOpeningBracendex).trim().split(` `);
+      if (rootId === null) rootId = id;
 
-    if (rootId === null) rootId = id;
+      if (objectType !== `PmLayout` && objectType !== `PmPartPrototype` && (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype))
+        items.set(id, {
+          dataObject: dataObject,
+          title: getTitle(dataObject.number, dataObject.name)
+        });
 
-    const objectDataLines = objectData.substr(attributeOpeningBracendex + 1).trim().split(`;\n`);
-
-    const attributes = new Map<string, string>();
-
-    const pmUpdateObject = { type: type, attributes: attributes };
-
-    for (let objectDataLineIndex = 0, objectDataLinesLength = objectDataLines.length; objectDataLineIndex < objectDataLinesLength; ++objectDataLineIndex) {
-      const objectDataLine = objectDataLines[objectDataLineIndex];
-
-      if (objectDataLine.length < 3) continue;
-
-      const splitString = ` = `;
-
-      const segments = objectDataLine.split(splitString);
-
-      const key = segments[0].trim();
-      let value = segments.slice(1).join(splitString).trim();
-
-      if (value.length > 0 && value !== `""`)
-        attributes.set(key, value);
+      else
+        supportingDataObjects.set(id, dataObject);
     }
-
-    if (type !== `PmLayout` && type !== `PmPartPrototype` && (attributes.has(`children`) || attributes.has(`inputFlows`) || attributes.has(`prototype`)))
-      items.set(id, {
-        pmUpdateObject: pmUpdateObject,
-        title: cleanStringForXML([attributes.get(`number`), attributes.get(`name`)]
-          .filter(value => value !== undefined)
-          .map(value => value.startsWith(`"`) && value.endsWith(`"`) ? value.substring(1, value.length - 1) : value).join(` - `))
-      });
-
-    else
-      supportingPMUpdateObjects.set(id, pmUpdateObject);
   }
 
   for (let item of items.values()) {
-    const attributes = item.pmUpdateObject.attributes;
+    const dataObject = item.dataObject;
 
-    const children = attributes.get(`children`);
-    const inputFlows = attributes.get(`inputFlows`);
-    const prototype = attributes.get(`prototype`);
-    const layout = attributes.get(`layout`);
+    let children = dataObject.children?.item ?? [] as string[];
+    if (!Array.isArray(children)) children = [children];
 
-    if (children !== undefined)
-      item.children = children.split(`,`).map(childId => items.get(childId)).filter(item => item !== undefined);
+    let inputFlows = dataObject.inputFlows?.item ?? [] as string[];
+    if (!Array.isArray(inputFlows)) inputFlows = [inputFlows];
 
-    if (inputFlows !== undefined)
-      item.children = inputFlows.split(`,`).map(flowId => items.get(supportingPMUpdateObjects.get(flowId)?.attributes.get(`parts`))).filter(item => item !== undefined);
+    item.children = [
+      ...children.map(id => items.get(id)).filter(item => item),
+      ...(inputFlows).map(id => {
+        let parts = supportingDataObjects.get(id)?.parts?.item ?? [] as string[];
+        if (!Array.isArray(parts)) parts = [parts];
 
-    if (prototype !== undefined)
-      item.filePath = supportingPMUpdateObjects.get(
-        supportingPMUpdateObjects.get(
-          supportingPMUpdateObjects.get(prototype)?.attributes.get(`threeDRep`)
-        )?.attributes.get(`file`)
-      )?.attributes.get(`fileName`);
+        return parts.map(id => items.get(id)).filter(item => item);
+      }).reduce((prev, curr) => [...prev, ...curr], [])
+    ];
 
-    if (layout) {
-      const layoutObject = supportingPMUpdateObjects.get(layout);
-      const location = layoutObject?.attributes.get(`location`) ?? `0,0,0`;
-      const rotation = layoutObject?.attributes.get(`rotation`) ?? `0,0,0`;
 
-      throw `not finished`;
+    const prototype = dataObject.prototype;
+    if (prototype) {
+      const prototypeObject = supportingDataObjects.get(prototype);
+
+      if (prototypeObject) {
+        item.title = getTitle(prototypeObject.catalogNumber, prototypeObject.name);
+
+        item.filePath = supportingDataObjects.get(
+          supportingDataObjects.get(prototypeObject.threeDRep)?.file
+        )?.fileName;
+      }
+
+      const layout = dataObject.layout;
+      if (layout) {
+        const absoluteLocation = supportingDataObjects.get(layout)?.NodeInfo?.absoluteLocation;
+        if (absoluteLocation) {
+          const x = Number.parseFloat(absoluteLocation.x);
+          const y = Number.parseFloat(absoluteLocation.y);
+          const z = Number.parseFloat(absoluteLocation.z);
+
+          const rx = Number.parseFloat(absoluteLocation.rx);
+          const ry = Number.parseFloat(absoluteLocation.ry);
+          const rz = Number.parseFloat(absoluteLocation.rz);
+
+          if (x !== 0 || y !== 0 || z !== 0 || rx !== 0 || ry !== 0 || rz !== 0)
+            item.transformationMatrix = eulerZYX2Matrix(x, y, z, rx, ry, rz);
+        }
+      }
     }
 
-    item.pmUpdateObject = null;
+    item.dataObject = null;
   }
 
   const instanceGraphContent = new Array<string>();
 
-  const rootRefs = item2XML(items.get(rootId), data.sysRootPath, [1], instanceGraphContent, data?.options?.includeBranchesWithoutCAD ?? false);
+  const partIdLookup = new Map<string, number>();
+
+  const rootRefs = item2XML(items.get(rootId), data.sysRootPath, [1], instanceGraphContent, partIdLookup, data?.options?.includeBranchesWithoutCAD ?? false);
 
   const currentTime = new Date();
   const timeString = `${currentTime.getHours().toString().padStart(2, `0`)}:${currentTime.getMinutes().toString().padStart(2, `0`)}:${currentTime.getSeconds().toString().padStart(2, `0`)}`;
   const dateString = `${currentTime.getFullYear()}-${(currentTime.getMonth() + 1).toString().padStart(2, `0`)}-${currentTime.getDate().toString().padStart(2, `0`)}`;
 
   const outputDocumentLines = [
-    `<?xml version="1.0" encoding="utf-8"?>`,
-    `<PLMXML xmlns="http://www.plmxml.org/Schemas/PLMXMLSchema" xmlns:vis="PLMXMLTcVisSchema" time="${timeString}" schemaVersion="6" author="Qpops" date="${dateString}">`,
+    //`<?xml version="1.0" encoding="utf-8"?>`,
+    //`<PLMXML xmlns="http://www.plmxml.org/Schemas/PLMXMLSchema" xmlns:vis="PLMXMLTcVisSchema" time="${timeString}" schemaVersion="6" author="Qpops" date="${dateString}">`,
+    `<PLMXML>`,
     `<ProductDef>`,
+    `<UserData><UserValue title="__TC-VIS_NO_UNITS" type="boolean" value="true"/></UserData>`,
     `<InstanceGraph rootRefs="${rootRefs}">`,
     ...instanceGraphContent,
     `</InstanceGraph>`,
@@ -124,35 +173,31 @@ addEventListener('message', ({ data }: { data: IInput }) => {
     `</PLMXML>`
   ];
 
-  const outputArrayBuffer = new TextEncoder().encode(outputDocumentLines.join(``)).buffer;
+  const outputArrayBuffer = new TextEncoder().encode(outputDocumentLines.join(`\n`)).buffer;
 
   postMessage(outputArrayBuffer, [outputArrayBuffer]);
 });
 
-const doubleBackSlashRegExp = /(?<!:)\\{2,}/g;
+const doubleBackSlashRegExp = /(?<!^)\\{2,}/g;
 const doubleForwardSlashRegExp = /\//g;
 
-const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: string[], includeEmpty: boolean = false) => {
-  const childInstanceIds = (item.children ?? []).map(child => item2XML(child, sysRootPath, id, xmlElements)).filter(childId => childId !== null);
+const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: string[], partIdLookup: Map<string, number>, includeEmpty: boolean = false) => {
+  const childInstanceIds = (item.children ?? []).map(child => item2XML(child, sysRootPath, id, xmlElements, partIdLookup, includeEmpty)).filter(childId => childId !== null);
 
   if (!includeEmpty && !item.filePath && !childInstanceIds.length)
     return null;
 
-  const idValue = ++id[0];
-  const instanceId = `${idValue}i`;
-  const viewId = `${idValue}v`;
-
-  const instanceRefs = `${childInstanceIds.length ? `instanceRefs="${childInstanceIds.join(' ')}" ` : ``}`;
-
-  const instanceXML = `<ProductInstance id="${instanceId}" partRef="#${viewId}"/>`;
+  const instanceId = ++id[0];
 
   let filePath = item.filePath;
   let representationXML = ``;
 
+  let location: string = null;
+
   if (filePath) {
     if (filePath.startsWith(`"`) && filePath.endsWith(`"`)) filePath = filePath.substring(1, filePath.length - 1);
 
-    let location = `${filePath.replace(`#`, sysRootPath).replace(doubleForwardSlashRegExp, `\\`).replace(doubleBackSlashRegExp, `\\`)}`;
+    location = `${filePath.replace(`#`, sysRootPath).replace(doubleForwardSlashRegExp, `\\`).replace(doubleBackSlashRegExp, `\\`)}`;
 
     if (location.endsWith(`.cojt`)) {
       const fullFilePathSegments = location.split(`\\`);
@@ -165,9 +210,31 @@ const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: s
     representationXML = `<Representation format="JT" location="${location}"/>`;
   }
 
-  const viewXML = `<ProductRevisionView id="${viewId}" name="${item.title}" ${instanceRefs}type="${!filePath ? `assembly` : `solid`}">${representationXML}</ProductRevisionView>`
+  const instanceRefs = `${childInstanceIds.length ? `instanceRefs="${childInstanceIds.join(' ')}" ` : ``}`;
 
-  xmlElements.unshift(instanceXML, viewXML);
+  let partId: number;
+
+  if (location) {
+    if (partIdLookup.has(location))
+      partId = partIdLookup.get(location);
+
+    else {
+      partId = ++id[0];
+      partIdLookup.set(location, partId);
+
+      xmlElements.push(`<Part id="${partId}" name="${item.title}" type="solid">${representationXML}</Part>`);
+    }
+  }
+
+  else {
+    partId = ++id[0];
+    xmlElements.push(`<Part id="${partId}" name="${item.title}" ${instanceRefs}type="assembly"/>`);
+  }
+
+  const transformXML = item.transformationMatrix ? `<Transform>${item.transformationMatrix}</Transform>` : null;
+  const instanceXML = `<Instance id="${instanceId}" partRef="#${partId}"` + (transformXML ? `>${transformXML}</Instance>` : `/>`);
+
+  xmlElements.unshift(instanceXML);
 
   return instanceId;
 }
@@ -179,8 +246,16 @@ const aposRegExp = /'/g;
 const quotRegExp = /"/g;
 
 const cleanStringForXML = (inputString: string) => inputString
-  .replace(ampRegExp, `&amp;`)
+  //.replace(ampRegExp, `&amp;`)
   .replace(ltRegExp, `&lt;`)
   .replace(gtRegExp, `&gt;`)
   .replace(aposRegExp, `&apos;`)
   .replace(quotRegExp, `&quot;`);
+
+const getTitle = (number: string, name: string) => cleanStringForXML([number, name]
+  .filter(value => value)
+  .map(value => value.startsWith(`"`) && value.endsWith(`"`) ? value.substring(1, value.length - 1) : value).join(` - `));
+
+const eulerZYX2Matrix = (x: number, y: number, z: number, rx: number, ry: number, rz: number) => new Three.Matrix4()
+  .makeRotationFromEuler(new Three.Euler(rx, ry, rz, `ZYX`))
+  .setPosition(x, y, z).toArray().join(` `);

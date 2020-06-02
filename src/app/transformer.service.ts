@@ -24,7 +24,7 @@ export class TransformerService {
 
         const input: IInput = {
           arrayBuffer: arrayBuffer,
-          sysRootPath: `P:\\sys_root`
+          sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`
         }
 
         worker.postMessage(input, [arrayBuffer]);
