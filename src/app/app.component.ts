@@ -1,32 +1,23 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { TransformerService } from './transformer.service';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+  version = {
+    major: 0,
+    minor: 0,
+    patch: 0
+  };
 
-  constructor(private transformService: TransformerService) { }
+  constructor() {
+    const preventDefault = (dragEvent: DragEvent) => {
+      dragEvent.preventDefault();
+      dragEvent.dataTransfer.dropEffect = `none`;
+    };
 
-  go(input: HTMLInputElement) {
-    const file = input.files[0];
-
-    if (file === undefined) return;
-
-    this.transformService.transform(file).then((data: ArrayBuffer) => {
-      const outputBlob = new Blob([data], { type: `txt/xml` });
-      const outputBlobURL = URL.createObjectURL(outputBlob);
-
-      const linkELement = document.createElement(`a`);
-      linkELement.href = outputBlobURL;
-      linkELement.download = `test-${new Date().toISOString()}.plmxml`;
-      linkELement.click();
-
-      linkELement.remove();
-      URL.revokeObjectURL(outputBlobURL);
-    });
+    [`dragover`, `drop`].forEach(eventName => window.addEventListener(eventName, preventDefault, false));
   }
 }

@@ -1,10 +1,11 @@
 /// <reference lib="webworker" />
 
-import * as Three from 'three/build/three.js';
+import { Euler, Matrix4 } from 'three/build/three.module.js';
 
 import { parse, X2jOptions } from 'fast-xml-parser';
 
 import { IInput } from './input';
+import { ITransformation } from './transformation';
 
 interface IItem {
   title: string,
@@ -12,7 +13,9 @@ interface IItem {
   transformationMatrix?: string,
   filePath?: string,
 
-  dataObject: IDataObject
+  dataObject: IDataObject,
+
+  hasParent?: boolean
 }
 
 interface IDataObject {
@@ -45,6 +48,10 @@ interface IDataObject {
 }
 
 addEventListener(`message`, ({ data }: { data: IInput }) => {
+  postMessage({ completionValue: 4, progressValue: 0 } as ITransformation);
+
+  if(1) return;
+
   const exludedNodes = [
     `Human`,
     `PmAttachment`,
@@ -70,10 +77,10 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
   };
   const objects = parse(text, parseOptions)?.Data?.Objects as { [key: string]: IDataObject[] };
 
+  postMessage({ completionValue: 4, progressValue: 1 } as ITransformation);
+
   const items = new Map<string, IItem>();
   const supportingDataObjects = new Map<string, IDataObject>();
-
-  let rootId: string = null;
 
   for (let [objectType, dataObjects] of Object.entries(objects)) {
     if (exludedNodes.indexOf(objectType) > -1) continue;
@@ -84,9 +91,7 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
       const dataObject = dataObjects[i];
       const id = dataObject["@_ExternalId"];
 
-      if (rootId === null) rootId = id;
-
-      if (objectType !== `PmLayout` && objectType !== `PmPartPrototype` && (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype))
+      if (objectType !== `PmLayout` && !objectType.endsWith(`Prototype`) && (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype))
         items.set(id, {
           dataObject: dataObject,
           title: getTitle(dataObject.number, dataObject.name)
@@ -96,6 +101,8 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
         supportingDataObjects.set(id, dataObject);
     }
   }
+
+  postMessage({ completionValue: 4, progressValue: 2 } as ITransformation);
 
   for (let item of items.values()) {
     const dataObject = item.dataObject;
@@ -114,7 +121,10 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
 
         return parts.map(id => items.get(id)).filter(item => item);
       }).reduce((prev, curr) => [...prev, ...curr], [])
-    ];
+    ].map(item => {
+      item.hasParent = true;
+      return item;
+    });
 
 
     const prototype = dataObject.prototype;
@@ -150,23 +160,26 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
     item.dataObject = null;
   }
 
+  postMessage({ completionValue: 4, progressValue: 3 } as ITransformation);
+
   const instanceGraphContent = new Array<string>();
 
   const partIdLookup = new Map<string, number>();
 
-  const rootRefs = item2XML(items.get(rootId), data.sysRootPath, [1], instanceGraphContent, partIdLookup, data?.options?.includeBranchesWithoutCAD ?? false);
+  const idTracker = [0];
+  const rootRefs = Array.from(items.entries()).filter(([id, item]) => !item.hasParent).map(([id]) =>
+    item2XML(items.get(id), data.sysRootPath, idTracker, instanceGraphContent, partIdLookup, data?.options?.includeBranchesWithoutCAD ?? false));
 
   const currentTime = new Date();
   const timeString = `${currentTime.getHours().toString().padStart(2, `0`)}:${currentTime.getMinutes().toString().padStart(2, `0`)}:${currentTime.getSeconds().toString().padStart(2, `0`)}`;
   const dateString = `${currentTime.getFullYear()}-${(currentTime.getMonth() + 1).toString().padStart(2, `0`)}-${currentTime.getDate().toString().padStart(2, `0`)}`;
 
   const outputDocumentLines = [
-    //`<?xml version="1.0" encoding="utf-8"?>`,
-    //`<PLMXML xmlns="http://www.plmxml.org/Schemas/PLMXMLSchema" xmlns:vis="PLMXMLTcVisSchema" time="${timeString}" schemaVersion="6" author="Qpops" date="${dateString}">`,
-    `<PLMXML>`,
+    `<?xml version="1.0" encoding="utf-8"?>`,
+    `<PLMXML xmlns="http://www.plmxml.org/Schemas/PLMXMLSchema" xmlns:vis="PLMXMLTcVisSchema" time="${timeString}" schemaVersion="6" author="Qpops" date="${dateString}">`,
     `<ProductDef>`,
     `<UserData><UserValue title="__TC-VIS_NO_UNITS" type="boolean" value="true"/></UserData>`,
-    `<InstanceGraph rootRefs="${rootRefs}">`,
+    `<InstanceGraph rootRefs="${rootRefs.join(` `)}">`,
     ...instanceGraphContent,
     `</InstanceGraph>`,
     `</ProductDef>`,
@@ -175,7 +188,7 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
 
   const outputArrayBuffer = new TextEncoder().encode(outputDocumentLines.join(`\n`)).buffer;
 
-  postMessage(outputArrayBuffer, [outputArrayBuffer]);
+  postMessage({ completionValue: 4, progressValue: 4, arrayBuffer: outputArrayBuffer } as ITransformation, [outputArrayBuffer]);
 });
 
 const doubleBackSlashRegExp = /(?<!^)\\{2,}/g;
@@ -184,8 +197,7 @@ const doubleForwardSlashRegExp = /\//g;
 const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: string[], partIdLookup: Map<string, number>, includeEmpty: boolean = false) => {
   const childInstanceIds = (item.children ?? []).map(child => item2XML(child, sysRootPath, id, xmlElements, partIdLookup, includeEmpty)).filter(childId => childId !== null);
 
-  if (!includeEmpty && !item.filePath && !childInstanceIds.length)
-    return null;
+  if (!includeEmpty && !item.filePath && !childInstanceIds.length) return null;
 
   const instanceId = ++id[0];
 
@@ -256,6 +268,6 @@ const getTitle = (number: string, name: string) => cleanStringForXML([number, na
   .filter(value => value)
   .map(value => value.startsWith(`"`) && value.endsWith(`"`) ? value.substring(1, value.length - 1) : value).join(` - `));
 
-const eulerZYX2Matrix = (x: number, y: number, z: number, rx: number, ry: number, rz: number) => new Three.Matrix4()
-  .makeRotationFromEuler(new Three.Euler(rx, ry, rz, `ZYX`))
+const eulerZYX2Matrix = (x: number, y: number, z: number, rx: number, ry: number, rz: number) => new Matrix4()
+  .makeRotationFromEuler(new Euler(rx, ry, rz, `ZYX`))
   .setPosition(x, y, z).toArray().join(` `);
