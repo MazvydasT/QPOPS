@@ -50,8 +50,6 @@ interface IDataObject {
 addEventListener(`message`, ({ data }: { data: IInput }) => {
   postMessage({ completionValue: 4, progressValue: 0 } as ITransformation);
 
-  if(1) return;
-
   const exludedNodes = [
     `Human`,
     `PmAttachment`,

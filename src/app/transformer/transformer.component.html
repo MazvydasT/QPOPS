@@ -8,19 +8,20 @@
 
     <div id="transformationItemsViewContainer">
         <div id="transformationItemsView">
-            <mat-card *ngFor="let transformationItem of transformationItems">
-                <mat-card-header>
-                    <mat-card-title>{{transformationItem.name}}</mat-card-title>
-                </mat-card-header>
+            <ng-container *ngFor="let transformationItem of transformationItems">
+                <mat-card *ngIf="(transformationItem.transformation | async) || {} as transformation">
+                    <mat-card-header>
+                        <mat-card-title>{{transformationItem.name}}</mat-card-title>
+                    </mat-card-header>
 
-                <mat-card-content>
-                    <mat-progress-bar *ngIf="transformationItem.transformation | async; let transformation"
-                        [mode]="transformation.progressValue === 0 ? 'indeterminate' : 'determinate'"
-                        [value]="transformation.progressValue / transformation.completionValue * 100"
-                        [color]="transformation.arrayBuffer ? 'accent' : 'primary'">
-                    </mat-progress-bar>
-                </mat-card-content>
-            </mat-card>
+                    <mat-card-content>
+                        <mat-progress-bar [mode]="transformation?.progressValue === 0 ? 'indeterminate' : 'determinate'"
+                            [value]="transformation?.progressValue / transformation?.completionValue * 100"
+                            [color]="transformation?.arrayBuffer ? 'accent' : 'primary'">
+                        </mat-progress-bar>
+                    </mat-card-content>
+                </mat-card>
+            </ng-container>
         </div>
     </div>
 </div>

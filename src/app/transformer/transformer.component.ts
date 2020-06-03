@@ -79,6 +79,10 @@ export class TransformerComponent {
     this.transform(Array.from(files));
   }
 
+  arrayBuffer2File(arrayBuffer: ArrayBuffer, name: string) {
+    return arrayBuffer ? new File([arrayBuffer], name, { type: `txt/xml` }) : null;
+  }
+
   private transform(files: File[]) {
     if (!files || !files.length) return;
 
@@ -90,8 +94,6 @@ export class TransformerComponent {
           name: name,
           transformation: this.transformService.transform(file).pipe(
             tap(tranformation => {
-              console.log(tranformation.progressValue / tranformation.completionValue * 100)
-
               if (tranformation.arrayBuffer) {
                 const outputBlob = new Blob([tranformation.arrayBuffer], { type: `txt/xml` });
                 const outputBlobURL = URL.createObjectURL(outputBlob);

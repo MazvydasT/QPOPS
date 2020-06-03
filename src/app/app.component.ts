@@ -7,7 +7,7 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   version = {
-    major: 0,
+    major: 1,
     minor: 0,
     patch: 0
   };
