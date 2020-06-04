@@ -8,8 +8,8 @@ import { Component } from '@angular/core';
 export class AppComponent {
   version = {
     major: 1,
-    minor: 0,
-    patch: 3
+    minor: 1,
+    patch: 0
   };
 
   constructor() {
