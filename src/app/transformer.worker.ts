@@ -25,9 +25,10 @@ interface IDataObject {
   number?: string,
   catalogNumber?: string,
 
-  children?: { item?: string[] },
-  inputFlows?: { item?: string[] },
-  parts?: { item?: string[] },
+  children?: { item?: string | string[] },
+  inputFlows?: { item?: string | string[] },
+  outputFlows?: { item?: string | string[] },
+  parts?: { item?: string | string[] },
 
   prototype?: string,
   layout?: string,
@@ -48,7 +49,9 @@ interface IDataObject {
 }
 
 addEventListener(`message`, ({ data }: { data: IInput }) => {
-  postMessage({ completionValue: 4, progressValue: 0 } as ITransformation);
+  const COMPLETION_VALUE = 5;
+  
+  postMessage({ completionValue: COMPLETION_VALUE, progressValue: 0 } as ITransformation);
 
   const exludedNodes = [
     `Human`,
@@ -57,7 +60,7 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
     `PmImage`,
     `PmPartPrototypeUsage`,
     `PmResourcePlaceholder`,
-    `PmSource`,
+    //`PmSource`,
     `PmToolInstance`,
     `PmToolPrototype`,
     `PmVariantSet`,
@@ -75,7 +78,7 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
   };
   const objects = parse(text, parseOptions)?.Data?.Objects as { [key: string]: IDataObject[] };
 
-  postMessage({ completionValue: 4, progressValue: 1 } as ITransformation);
+  postMessage({ completionValue: COMPLETION_VALUE, progressValue: 1 } as ITransformation);
 
   const items = new Map<string, IItem>();
   const supportingDataObjects = new Map<string, IDataObject>();
@@ -89,7 +92,7 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
       const dataObject = dataObjects[i];
       const id = dataObject["@_ExternalId"];
 
-      if (objectType !== `PmLayout` && !objectType.endsWith(`Prototype`) && (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype))
+      if (objectType !== `PmLSource` && objectType !== `PmLayout` && !objectType.endsWith(`Prototype`) && (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype))
         items.set(id, {
           dataObject: dataObject,
           title: getTitle(dataObject.number, dataObject.name)
@@ -100,7 +103,7 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
     }
   }
 
-  postMessage({ completionValue: 4, progressValue: 2 } as ITransformation);
+  postMessage({ completionValue: COMPLETION_VALUE, progressValue: 2 } as ITransformation);
 
   for (let item of items.values()) {
     const dataObject = item.dataObject;
@@ -111,9 +114,14 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
     let inputFlows = dataObject.inputFlows?.item ?? [] as string[];
     if (!Array.isArray(inputFlows)) inputFlows = [inputFlows];
 
+    if (inputFlows.indexOf(`PP-JLR_1_EA-12-9-2011-8-7-19-33092462-44016955`) > -1) {
+      const found = 0;
+      debugger;
+    }
+
     item.children = [
       ...children.map(id => items.get(id)).filter(item => item),
-      ...(inputFlows).map(id => {
+      ...inputFlows.map(id => {
         let parts = supportingDataObjects.get(id)?.parts?.item ?? [] as string[];
         if (!Array.isArray(parts)) parts = [parts];
 
@@ -158,14 +166,42 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
     item.dataObject = null;
   }
 
-  postMessage({ completionValue: 4, progressValue: 3 } as ITransformation);
+  postMessage({ completionValue: COMPLETION_VALUE, progressValue: 3 } as ITransformation);
+
+  for(var supportingDataObject of supportingDataObjects.values()) {
+    let outputFlows = supportingDataObject.outputFlows?.item;
+
+    if(!outputFlows) continue;
+
+    if (!Array.isArray(outputFlows)) outputFlows = [outputFlows];
+
+    for(let pmFlowId of outputFlows) {
+      const flowObject = supportingDataObjects.get(pmFlowId);
+      if(!flowObject) continue;
+
+      let parts = flowObject.parts?.item;
+      if(!parts) continue;
+
+      if (!Array.isArray(parts)) parts = [parts];
+
+      for(let itemId of parts) {
+        const item = items.get(itemId);
+        if(!item) continue;
+
+        item.hasParent = true;
+      }
+    }
+  }
+
+  postMessage({ completionValue: COMPLETION_VALUE, progressValue: 4 } as ITransformation);
 
   const instanceGraphContent = new Array<string>();
 
   const partIdLookup = new Map<string, number>();
 
   const idTracker = [0];
-  const rootRefs = Array.from(items.entries()).filter(([id, item]) => !item.hasParent).map(([id]) =>
+
+  const rootRefs = Array.from(items.entries()).filter(([_, item]) => !item.hasParent).map(([id]) =>
     item2XML(items.get(id), data.sysRootPath, idTracker, instanceGraphContent, partIdLookup, data?.options?.includeBranchesWithoutCAD ?? false));
 
   const currentTime = new Date();
@@ -186,7 +222,7 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
 
   const outputArrayBuffer = new TextEncoder().encode(outputDocumentLines.join(`\n`)).buffer;
 
-  postMessage({ completionValue: 4, progressValue: 4, arrayBuffer: outputArrayBuffer } as ITransformation, [outputArrayBuffer]);
+  postMessage({ completionValue: COMPLETION_VALUE, progressValue: 5, arrayBuffer: outputArrayBuffer } as ITransformation, [outputArrayBuffer]);
 });
 
 const doubleBackSlashRegExp = /(?<!^)\\{2,}/g;
