@@ -3,8 +3,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { TransformerComponent } from './transformer/transformer.component';
 
 const routes: Routes = [
-  { path: `app`, component: TransformerComponent, pathMatch: `full` },
-  { path: `**`, redirectTo: `/app` }
+  { path: `main`, component: TransformerComponent, pathMatch: `full` },
+  { path: `**`, redirectTo: `/main` }
 ];
 
 @NgModule({

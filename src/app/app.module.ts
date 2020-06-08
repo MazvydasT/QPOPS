@@ -10,11 +10,17 @@ import { TransformerComponent } from './transformer/transformer.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
+import { OverlayModule } from '@angular/cdk/overlay';
+
+import { VideoOverlayComponent } from './video-overlay/video-overlay.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    TransformerComponent
+    TransformerComponent,
+    VideoOverlayComponent
   ],
   imports: [
     BrowserModule,
@@ -24,9 +30,13 @@ import { MatButtonModule } from '@angular/material/button';
 
     MatCardModule,
     MatProgressBarModule,
-    MatButtonModule
+    MatButtonModule,
+    MatProgressSpinnerModule,
+
+    OverlayModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [VideoOverlayComponent]
 })
 export class AppModule { }

@@ -11,7 +11,9 @@
           "/manifest.webmanifest",
           "/*.css",
           "/*.js",
-          "/favicon.ico"
+          "/favicon.ico",
+          "/assets/**",
+          "/*.(eot|svg|cur|jpg|png|webp|gif|otf|ttf|woff|woff2|ani)"
         ]
       }
     },
@@ -20,10 +22,6 @@
       "installMode": "lazy",
       "updateMode": "prefetch",
       "resources": {
-        "files": [
-          "/assets/**",
-          "/*.(eot|svg|cur|jpg|png|webp|gif|otf|ttf|woff|woff2|ani)"
-        ],
         "urls": [
           "https://fonts.g**/**"
         ]

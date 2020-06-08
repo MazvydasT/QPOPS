@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { VideoOverlayService } from './video-overlay/video-overlay.service';
 
 @Component({
   selector: 'app-root',
@@ -8,11 +9,17 @@ import { Component } from '@angular/core';
 export class AppComponent {
   version = {
     major: 1,
-    minor: 1,
-    patch: 1
+    minor: 2,
+    patch: 0
   };
 
-  constructor() {
+  howToLinks = [
+    { name: `Filtering`, link: `assets/videos/filtering.mp4` },
+    { name: `Exporting`, link: `assets/videos/exporting.mp4` },
+    { name: `Converting`, link: `assets/videos/converting.mp4` }
+  ];
+
+  constructor(public videoOverlayService: VideoOverlayService) {
     const preventDefault = (dragEvent: DragEvent) => {
       dragEvent.preventDefault();
       dragEvent.dataTransfer.dropEffect = `none`;
