@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import { IInput } from './input';
+import { IInput, IInputOptions } from './input';
 import { ITransformation } from './transformation';
 
 @Injectable({
@@ -11,7 +11,7 @@ import { ITransformation } from './transformation';
 export class TransformerService {
   constructor() { }
 
-  transform(file: File) {
+  transform(file: File, options?: IInputOptions) {
     return new Observable<ITransformation>(subscriber => {
       if (typeof Worker === 'undefined') {
         subscriber.error(`Web wrokers are not supported in this browser.`);
@@ -44,7 +44,8 @@ export class TransformerService {
 
         const input: IInput = {
           arrayBuffer: arrayBuffer,
-          sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`
+          sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`,
+          options: options
         }
 
         worker.postMessage(input, [arrayBuffer]);
@@ -52,28 +53,5 @@ export class TransformerService {
 
       return () => terminateWorker();
     });
-
-    /*return new Promise((resolve, reject) => {
-      if (typeof Worker === 'undefined') {
-        reject(`Web wrokers are not supported in this browser.`);
-        return;
-      }
-
-      file.arrayBuffer().then(arrayBuffer => {
-        const worker = new Worker('./transformer.worker', { type: 'module' });
-
-        worker.onmessage = ({ data }) => {
-          resolve(data);
-          worker.terminate();
-        };
-
-        const input: IInput = {
-          arrayBuffer: arrayBuffer,
-          sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`
-        }
-
-        worker.postMessage(input, [arrayBuffer]);
-      });
-    });*/
   }
 }

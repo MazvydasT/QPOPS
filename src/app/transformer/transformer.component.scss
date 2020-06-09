@@ -15,17 +15,23 @@
     transition: background-color 1s;
 }
 
+:host {
+    display: flex;
+    flex-flow: column;
+}
+
 :host,
 #transformationItemsViewContainer {
     flex: 1 1 auto;
     overflow: auto;
 }
 
-#transformationItemsViewContainer {
-    margin-top: 8px;
+#options {
+    display: flex;
+    flex-flow: column;
 }
 
-#transformationItemsView {
+.spaceAround {
     padding-right: 8px;
     padding-left: 8px;
 }
@@ -42,10 +48,6 @@
 mat-card {
     display: block;
     margin-top: 8px;
-}
-
-mat-card:first-child {
-    margin-top: 0;
 }
 
 #addButton {

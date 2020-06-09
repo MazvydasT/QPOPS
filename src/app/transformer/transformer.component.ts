@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 
 import { TransformerService } from '../transformer.service';
 import { ITransformation } from '../transformation';
+import { IInputOptions } from '../input';
 
 interface ITransformationItem {
   transformation: Observable<ITransformation>,
@@ -20,6 +21,10 @@ export class TransformerComponent {
   transformationItems: ITransformationItem[] = [];
 
   acceptDrop: boolean = null;
+
+  options: IInputOptions = {
+    includeBranchesWithoutCAD: false
+  };
 
   constructor(private transformService: TransformerService) { }
 
@@ -92,7 +97,7 @@ export class TransformerComponent {
 
         return {
           name: name,
-          transformation: this.transformService.transform(file).pipe(
+          transformation: this.transformService.transform(file, this.options).pipe(
             tap(tranformation => {
               if (tranformation.arrayBuffer) {
                 const outputBlob = new Blob([tranformation.arrayBuffer], { type: `txt/xml` });

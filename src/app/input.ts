@@ -1,5 +1,5 @@
 export interface IInputOptions {
-    includeBranchesWithoutCAD: boolean
+    includeBranchesWithoutCAD?: boolean
 }
 
 export interface IInput {

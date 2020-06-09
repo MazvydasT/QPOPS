@@ -1,13 +1,25 @@
+<div id="options" class="spaceAround">
+    <h2>Options:</h2>
+    <div>
+        <mat-slide-toggle [(ngModel)]="options.includeBranchesWithoutCAD">Include branches without CAD
+        </mat-slide-toggle>
+    </div>
+</div>
+
 <div class="drop-zone" [ngClass]="{'accept-drop': acceptDrop, 'reject-drop': acceptDrop === false}" id="container"
     (dragenter)="dragEnterOver($event)" (dragleave)="dragLeave($event)" (dragover)="dragEnterOver($event)"
     (drop)="drop($event)">
-    <input #input id="input" type="file" (change)="go($event.target.files)" multiple accept=".xml" />
+
+    <form #form>
+        <input #input id="input" type="file" (change)="go($event.target.files); form.reset()" multiple accept=".xml" />
+    </form>
+
     <button id="addButton" mat-raised-button color="primary" (click)="input.click()">
         <h1>Click or drag & drop</h1>
     </button>
 
     <div id="transformationItemsViewContainer">
-        <div id="transformationItemsView">
+        <div class="spaceAround">
             <ng-container *ngFor="let transformationItem of transformationItems">
                 <mat-card *ngIf="(transformationItem.transformation | async) || {} as transformation">
                     <mat-card-header>

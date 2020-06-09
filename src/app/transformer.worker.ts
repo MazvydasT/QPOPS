@@ -50,7 +50,7 @@ interface IDataObject {
 
 addEventListener(`message`, ({ data }: { data: IInput }) => {
   const COMPLETION_VALUE = 5;
-  
+
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 0 } as ITransformation);
 
   const exludedNodes = [
@@ -60,10 +60,13 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
     `PmImage`,
     `PmPartPrototypeUsage`,
     `PmResourcePlaceholder`,
-    //`PmSource`,
     `PmToolInstance`,
     `PmToolPrototype`,
     `PmVariantSet`,
+    `PrLine`,
+    `PrPlant`,
+    `PrStation`,
+    `PrZone`,
     `ScoreableOperation`,
     `Station_Geometry`
   ];
@@ -92,7 +95,7 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
       const dataObject = dataObjects[i];
       const id = dataObject["@_ExternalId"];
 
-      if (objectType !== `PmLSource` && objectType !== `PmLayout` && !objectType.endsWith(`Prototype`) && (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype))
+      if (objectType !== `PmSource` && objectType !== `PmLayout` && !objectType.endsWith(`Prototype`) && (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype))
         items.set(id, {
           dataObject: dataObject,
           title: getTitle(dataObject.number, dataObject.name)
@@ -113,11 +116,6 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
 
     let inputFlows = dataObject.inputFlows?.item ?? [] as string[];
     if (!Array.isArray(inputFlows)) inputFlows = [inputFlows];
-
-    if (inputFlows.indexOf(`PP-JLR_1_EA-12-9-2011-8-7-19-33092462-44016955`) > -1) {
-      const found = 0;
-      debugger;
-    }
 
     item.children = [
       ...children.map(id => items.get(id)).filter(item => item),
@@ -168,25 +166,25 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
 
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 3 } as ITransformation);
 
-  for(var supportingDataObject of supportingDataObjects.values()) {
+  for (var supportingDataObject of supportingDataObjects.values()) {
     let outputFlows = supportingDataObject.outputFlows?.item;
 
-    if(!outputFlows) continue;
+    if (!outputFlows) continue;
 
     if (!Array.isArray(outputFlows)) outputFlows = [outputFlows];
 
-    for(let pmFlowId of outputFlows) {
+    for (let pmFlowId of outputFlows) {
       const flowObject = supportingDataObjects.get(pmFlowId);
-      if(!flowObject) continue;
+      if (!flowObject) continue;
 
       let parts = flowObject.parts?.item;
-      if(!parts) continue;
+      if (!parts) continue;
 
       if (!Array.isArray(parts)) parts = [parts];
 
-      for(let itemId of parts) {
+      for (let itemId of parts) {
         const item = items.get(itemId);
-        if(!item) continue;
+        if (!item) continue;
 
         item.hasParent = true;
       }
