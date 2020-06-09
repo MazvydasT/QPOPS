@@ -26,6 +26,10 @@
     overflow: auto;
 }
 
+#transformationItemsViewContainer {
+    margin-top: 8px;
+}
+
 #options {
     display: flex;
     flex-flow: column;
@@ -39,7 +43,10 @@
 #container {
     box-sizing: border-box;
     padding: 8px;
+
     height: 100%;
+
+    overflow: auto;
 
     display: flex;
     flex-flow: column;
@@ -50,16 +57,20 @@ mat-card {
     margin-top: 8px;
 }
 
+mat-card:first-child {
+    margin-top: 0;
+}
+
 #addButton {
     display: block;
     width: 100%;
-    height: 75px;
+    min-height: 75px;
 }
 
 #addButton h1 {
     margin: 0;
 }
 
-#input {
+form {
     display: none;
 }

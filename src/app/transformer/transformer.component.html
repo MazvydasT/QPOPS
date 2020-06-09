@@ -11,7 +11,7 @@
     (drop)="drop($event)">
 
     <form #form>
-        <input #input id="input" type="file" (change)="go($event.target.files); form.reset()" multiple accept=".xml" />
+        <input #input type="file" (change)="go($event.target.files); form.reset()" multiple accept=".xml" />
     </form>
 
     <button id="addButton" mat-raised-button color="primary" (click)="input.click()">

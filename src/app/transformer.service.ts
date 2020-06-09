@@ -51,15 +51,15 @@ export class TransformerService {
         worker.postMessage(input, [arrayBuffer]);
       };
 
-      const fileReader = new FileReader();
+      /*const fileReader = new FileReader();
 
       fileReader.onload = () => {
         processArrayBuffer(fileReader.result as ArrayBuffer)
       };
 
-      fileReader.readAsArrayBuffer(file);
+      fileReader.readAsArrayBuffer(file);*/
 
-      //file.arrayBuffer().then(processArrayBuffer);
+      file.arrayBuffer().then(processArrayBuffer);
 
       return () => terminateWorker();
     });

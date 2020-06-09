@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { VideoOverlayService } from './video-overlay/video-overlay.service';
+import { BrowserFeatureDetectionService } from './browser-feature-detection.service';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,7 @@ export class AppComponent {
   version = {
     major: 1,
     minor: 3,
-    patch: 2
+    patch: 3
   };
 
   howToLinks = [
@@ -19,7 +20,12 @@ export class AppComponent {
     { name: `Converting`, link: `assets/videos/converting.mp4` }
   ];
 
-  constructor(public videoOverlayService: VideoOverlayService) {
+  supportsRequiredFeatures = this.browserFeatureDetectionService.supportsRequiredFeatures();
+
+  constructor(
+    public videoOverlayService: VideoOverlayService,
+    private browserFeatureDetectionService: BrowserFeatureDetectionService
+  ) {
     const preventDefault = (dragEvent: DragEvent) => {
       dragEvent.preventDefault();
       dragEvent.dataTransfer.dropEffect = `none`;

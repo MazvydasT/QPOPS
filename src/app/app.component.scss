@@ -1,7 +1,7 @@
 :host {
     display: flex;
     flex-flow: column;
-    
+
     height: 100%;
 }
 
@@ -27,4 +27,21 @@
 .spaceAround {
     padding-right: 8px;
     padding-left: 8px;
+}
+
+#browserLacksFeaturesNote {
+    /*width: 100%;*/
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    /*text-align: center;*/
+
+    > h2 {
+        white-space: nowrap;
+
+        > span {
+            display: block;
+        }
+    }
 }
