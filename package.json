@@ -23,7 +23,6 @@
     "@angular/platform-browser-dynamic": "~9.1.9",
     "@angular/router": "~9.1.9",
     "@angular/service-worker": "~9.1.9",
-    "blob-polyfill": "^4.0.20200601",
     "core-js": "^3.6.5",
     "fast-xml-parser": "^3.17.3",
     "rxjs": "~6.5.4",

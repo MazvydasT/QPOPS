@@ -24,7 +24,7 @@ export class TransformerService {
         if (worker) worker.terminate();
       };
 
-      file.arrayBuffer().then(arrayBuffer => {
+      const processArrayBuffer = (arrayBuffer: ArrayBuffer) => {
         worker = new Worker('./transformer.worker', { type: 'module' });
 
         worker.onmessage = ({ data }: { data: ITransformation }) => {
@@ -49,7 +49,17 @@ export class TransformerService {
         }
 
         worker.postMessage(input, [arrayBuffer]);
-      });
+      };
+
+      const fileReader = new FileReader();
+
+      fileReader.onload = () => {
+        processArrayBuffer(fileReader.result as ArrayBuffer)
+      };
+
+      fileReader.readAsArrayBuffer(file);
+
+      //file.arrayBuffer().then(processArrayBuffer);
 
       return () => terminateWorker();
     });
