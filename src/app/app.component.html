@@ -1,4 +1,4 @@
-<ng-container *ngIf="!supportsRequiredFeatures; else browserLacksFeatures">
+<ng-container *ngIf="supportsRequiredFeatures; else browserLacksFeatures">
     <div class="spaceAround header">
         <h2 class="spaceRight">How to:</h2>
         <ng-container *ngFor="let link of howToLinks; let i = index">
@@ -16,8 +16,8 @@
     <div id="browserLacksFeaturesNote">
         <img src="assets/images/dead.png">
         <h2>
-            <span>Dear user, this browser does not have features required by this app.</span>
-            <span>Please use a more modern browser.</span>
+            <span>Dear user, current browser does not support features required by this app.</span>
+            <span>Please use one that's more up-to-date with the world ;)</span>
         </h2>
     </div>
 </ng-template>
