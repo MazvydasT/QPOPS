@@ -1,9 +1,6 @@
-export interface IInputOptions {
-    includeBranchesWithoutCAD?: boolean
-}
+import { ITransformationConfiguration } from './transformation-configuration';
 
 export interface IInput {
     arrayBuffer: ArrayBuffer,
-    sysRootPath: string,
-    options?: IInputOptions
+    configuration: ITransformationConfiguration
 }

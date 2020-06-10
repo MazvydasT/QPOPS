@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import { IInput, IInputOptions } from './input';
+import { IInput } from './input';
+import { ITransformationConfiguration } from "./transformation-configuration";
 import { ITransformation } from './transformation';
 
 @Injectable({
@@ -11,7 +12,7 @@ import { ITransformation } from './transformation';
 export class TransformerService {
   constructor() { }
 
-  transform(file: File, options?: IInputOptions) {
+  transform(file: File, options?: ITransformationConfiguration) {
     return new Observable<ITransformation>(subscriber => {
       if (typeof Worker === 'undefined') {
         subscriber.error(`Web wrokers are not supported in this browser.`);
@@ -44,8 +45,7 @@ export class TransformerService {
 
         const input: IInput = {
           arrayBuffer: arrayBuffer,
-          sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`,
-          options: options
+          configuration: options
         }
 
         worker.postMessage(input, [arrayBuffer]);

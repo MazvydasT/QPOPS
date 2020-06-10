@@ -1,20 +1,26 @@
-<div id="options" class="spaceAround">
-    <h2>Options:</h2>
-    <div>
-        <mat-slide-toggle [(ngModel)]="options.includeBranchesWithoutCAD">Include branches without CAD
+<div id="configuration" class="spaceAround">
+    <h2>Configuration:</h2>
+    <form id="configControls" #configForm="ngForm">
+        <mat-slide-toggle [(ngModel)]="configuration.includeBranchesWithoutCAD" name="includeBranchesWithoutCAD">Include
+            branches without CAD
         </mat-slide-toggle>
-    </div>
+
+        <mat-form-field id="sysRootInput">
+            <mat-label>Path to <span class="italic">sys_root</span></mat-label>
+            <input matInput [(ngModel)]="configuration.sysRootPath" name="sysRootPath" required>
+        </mat-form-field>
+    </form>
 </div>
 
 <div class="drop-zone" [ngClass]="{'accept-drop': acceptDrop, 'reject-drop': acceptDrop === false}" id="container"
-    (dragenter)="dragEnterOver($event)" (dragleave)="dragLeave($event)" (dragover)="dragEnterOver($event)"
-    (drop)="drop($event)">
+    (dragenter)="dragEnterOver($event, configForm.invalid)" (dragleave)="dragLeave($event)"
+    (dragover)="dragEnterOver($event, configForm.invalid)" (drop)="drop($event)">
 
     <form #form>
         <input #input type="file" (change)="go($event.target.files); form.reset()" multiple accept=".xml" />
     </form>
 
-    <button id="addButton" mat-raised-button color="primary" (click)="input.click()">
+    <button [disabled]="configForm.invalid" id="addButton" mat-raised-button color="primary" (click)="input.click()">
         <h1>Click or drag & drop</h1>
     </button>
 

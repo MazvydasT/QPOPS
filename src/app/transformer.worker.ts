@@ -200,7 +200,7 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
   const idTracker = [0];
 
   const rootRefs = Array.from(items.entries()).filter(([_, item]) => !item.hasParent).map(([id]) =>
-    item2XML(items.get(id), data.sysRootPath, idTracker, instanceGraphContent, partIdLookup, data?.options?.includeBranchesWithoutCAD ?? false));
+    item2XML(items.get(id), data.configuration.sysRootPath, idTracker, instanceGraphContent, partIdLookup, data?.configuration?.includeBranchesWithoutCAD ?? false));
 
   const currentTime = new Date();
   const timeString = `${currentTime.getHours().toString().padStart(2, `0`)}:${currentTime.getMinutes().toString().padStart(2, `0`)}:${currentTime.getSeconds().toString().padStart(2, `0`)}`;

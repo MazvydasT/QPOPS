@@ -30,9 +30,13 @@
     margin-top: 8px;
 }
 
-#options {
+#configuration {
     display: flex;
     flex-flow: column;
+
+    > h2 {
+        margin-bottom: 0;
+    }
 }
 
 .spaceAround {
@@ -73,4 +77,18 @@ mat-card:first-child {
 
 form {
     display: none;
+}
+
+.italic {
+    font-style: italic;
+}
+
+#configControls {
+    display: flex;
+    align-items: center;
+}
+
+#sysRootInput {
+    flex: 1 1 auto;
+    padding-left: 16px;
 }

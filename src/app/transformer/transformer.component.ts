@@ -5,7 +5,7 @@ import { tap } from 'rxjs/operators';
 
 import { TransformerService } from '../transformer.service';
 import { ITransformation } from '../transformation';
-import { IInputOptions } from '../input';
+import { ITransformationConfiguration } from "../transformation-configuration";
 
 interface ITransformationItem {
   transformation: Observable<ITransformation>,
@@ -22,16 +22,24 @@ export class TransformerComponent {
 
   acceptDrop: boolean = null;
 
-  options: IInputOptions = {
-    includeBranchesWithoutCAD: false
+  configuration: ITransformationConfiguration = {
+    includeBranchesWithoutCAD: false,
+    sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`
   };
 
   constructor(private transformService: TransformerService) { }
 
-  dragEnterOver(dragEvent: DragEvent) {
+  dragEnterOver(dragEvent: DragEvent, preventDrop = false) {
     this.preventDefault(dragEvent);
 
     const dataTransfer = dragEvent.dataTransfer;
+
+    if(preventDrop) {
+      this.acceptDrop = false;
+      dataTransfer.dropEffect = `none`;
+      return;
+    }
+
     const items = dataTransfer.items;
     let containsXMLFiles = false;
 
@@ -97,7 +105,7 @@ export class TransformerComponent {
 
         return {
           name: name,
-          transformation: this.transformService.transform(file, this.options).pipe(
+          transformation: this.transformService.transform(file, this.configuration).pipe(
             tap(tranformation => {
               if (tranformation.arrayBuffer) {
                 const outputBlob = new Blob([tranformation.arrayBuffer], { type: `txt/xml` });
