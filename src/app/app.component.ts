@@ -10,8 +10,8 @@ import { BrowserFeatureDetectionService } from './browser-feature-detection.serv
 export class AppComponent {
   version = {
     major: 1,
-    minor: 3,
-    patch: 4
+    minor: 4,
+    patch: 0
   };
 
   howToLinks = [
