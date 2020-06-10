@@ -6,6 +6,7 @@ import { tap } from 'rxjs/operators';
 import { TransformerService } from '../transformer.service';
 import { ITransformation } from '../transformation';
 import { ITransformationConfiguration } from "../transformation-configuration";
+import { StorageService } from '../storage.service';
 
 interface ITransformationItem {
   transformation: Observable<ITransformation>,
@@ -27,14 +28,30 @@ export class TransformerComponent {
     sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`
   };
 
-  constructor(private transformService: TransformerService) { }
+  constructor(
+    private transformService: TransformerService,
+    private storageService: StorageService
+  ) {
+    Object.assign(this.configuration, storageService.get<ITransformationConfiguration>(`configuration`) ?? {});
+  }
+
+  onConfigurationChnage() {
+    setTimeout(() => {
+      const currentConfiguration = Object.assign({}, this.configuration);
+
+      if (currentConfiguration.sysRootPath.trim().length === 0)
+        currentConfiguration.sysRootPath = undefined;
+
+      this.storageService.set(`configuration`, currentConfiguration);
+    });
+  }
 
   dragEnterOver(dragEvent: DragEvent, preventDrop = false) {
     this.preventDefault(dragEvent);
 
     const dataTransfer = dragEvent.dataTransfer;
 
-    if(preventDrop) {
+    if (preventDrop) {
       this.acceptDrop = false;
       dataTransfer.dropEffect = `none`;
       return;

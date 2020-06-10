@@ -1,13 +1,13 @@
 <div id="configuration" class="spaceAround">
     <h2>Configuration:</h2>
-    <form id="configControls" #configForm="ngForm">
+    <form id="configControls" #configForm (input)="onConfigurationChnage()">
         <mat-slide-toggle [(ngModel)]="configuration.includeBranchesWithoutCAD" name="includeBranchesWithoutCAD">Include
             branches without CAD
         </mat-slide-toggle>
 
         <mat-form-field id="sysRootInput">
             <mat-label>Path to <span class="italic">sys_root</span></mat-label>
-            <input matInput [(ngModel)]="configuration.sysRootPath" name="sysRootPath" required>
+            <input matInput [(ngModel)]="configuration.sysRootPath" name="sysRootPath" required autocomplete="off">
         </mat-form-field>
     </form>
 </div>
