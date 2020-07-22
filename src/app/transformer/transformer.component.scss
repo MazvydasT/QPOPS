@@ -88,7 +88,22 @@ form {
     align-items: center;
 }
 
+.displayFlex {
+    display: flex;
+}
+
+.flexDirectionColumn {
+    flex-direction: column;
+}
+
+.padLeft {
+    padding-left: 16px;
+}
+
+.margin {
+    margin: 4px;
+}
+
 #sysRootInput {
     flex: 1 1 auto;
-    padding-left: 16px;
 }

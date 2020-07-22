@@ -1,11 +1,21 @@
 <div id="configuration" class="spaceAround">
     <h2>Configuration:</h2>
     <form id="configControls" #configForm (input)="onConfigurationChnage()">
-        <mat-slide-toggle [(ngModel)]="configuration.includeBranchesWithoutCAD" name="includeBranchesWithoutCAD">Include
+        <div>
+            <label>Output format:</label>
+            <mat-radio-group class="displayFlex flexDirectionColumn" name="outputType"
+                [(ngModel)]="configuration.outputType">
+                <mat-radio-button class="margin" [value]="ouputTypes.PLMXML">{{"PLMXML"}}</mat-radio-button>
+                <mat-radio-button class="margin" [value]="ouputTypes.AJT">{{"AJT"}}</mat-radio-button>
+            </mat-radio-group>
+        </div>
+
+        <mat-slide-toggle class="padLeft" [(ngModel)]="configuration.includeBranchesWithoutCAD"
+            name="includeBranchesWithoutCAD">Include
             branches without CAD
         </mat-slide-toggle>
 
-        <mat-form-field id="sysRootInput">
+        <mat-form-field class="padLeft" id="sysRootInput">
             <mat-label>Path to <span class="italic">sys_root</span></mat-label>
             <input matInput [(ngModel)]="configuration.sysRootPath" name="sysRootPath" required autocomplete="off">
         </mat-form-field>

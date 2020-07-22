@@ -5,7 +5,7 @@ import { tap } from 'rxjs/operators';
 
 import { TransformerService } from '../transformer.service';
 import { ITransformation } from '../transformation';
-import { ITransformationConfiguration } from "../transformation-configuration";
+import { ITransformationConfiguration, OutputType } from "../transformation-configuration";
 import { StorageService } from '../storage.service';
 
 interface ITransformationItem {
@@ -23,8 +23,11 @@ export class TransformerComponent {
 
   acceptDrop: boolean = null;
 
+  ouputTypes = OutputType;
+
   configuration: ITransformationConfiguration = {
     includeBranchesWithoutCAD: false,
+    outputType: OutputType.PLMXML,
     sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`
   };
 
@@ -125,12 +128,12 @@ export class TransformerComponent {
           transformation: this.transformService.transform(file, this.configuration).pipe(
             tap(tranformation => {
               if (tranformation.arrayBuffer) {
-                const outputBlob = new Blob([tranformation.arrayBuffer], { type: `txt/xml` });
+                const outputBlob = new Blob([tranformation.arrayBuffer], { type: this.configuration.outputType === OutputType.PLMXML ? `txt/xml` : `text/plain` });
                 const outputBlobURL = URL.createObjectURL(outputBlob);
 
                 const linkELement = document.createElement(`a`);
                 linkELement.href = outputBlobURL;
-                linkELement.download = `${name}.plmxml`;
+                linkELement.download = `${name}.${this.configuration.outputType === OutputType.PLMXML ? 'plmxml' : 'ajt'}`;
                 linkELement.click();
 
                 linkELement.remove();

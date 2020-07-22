@@ -15,6 +15,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatRadioModule } from '@angular/material/radio';
 
 import { OverlayModule } from '@angular/cdk/overlay';
 
@@ -40,6 +41,7 @@ import { VideoOverlayComponent } from './video-overlay/video-overlay.component';
     MatSlideToggleModule,
     MatFormFieldModule,
     MatInputModule,
+    MatRadioModule,
 
     OverlayModule
   ],

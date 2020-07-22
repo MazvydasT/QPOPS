@@ -6,50 +6,13 @@ import { parse, X2jOptions } from 'fast-xml-parser';
 
 import { IInput } from './input';
 import { ITransformation } from './transformation';
-
-interface IItem {
-  title: string,
-  children?: IItem[],
-  transformationMatrix?: string,
-  filePath?: string,
-
-  dataObject: IDataObject,
-
-  hasParent?: boolean
-}
-
-interface IDataObject {
-  '@_ExternalId': string,
-
-  name?: string,
-  number?: string,
-  catalogNumber?: string,
-
-  children?: { item?: string | string[] },
-  inputFlows?: { item?: string | string[] },
-  outputFlows?: { item?: string | string[] },
-  parts?: { item?: string | string[] },
-
-  prototype?: string,
-  layout?: string,
-  threeDRep?: string,
-  file?: string,
-  fileName?: string,
-
-  NodeInfo?: {
-    absoluteLocation?: {
-      rx: string,
-      ry: string,
-      rz: string,
-      x: string,
-      y: string,
-      z: string
-    }
-  }
-}
+import { IDataObject, IItem } from './item';
+import { items2XML } from './transformer.2xml';
+import { items2AJT } from './transformer.2ajt';
+import { OutputType } from './transformation-configuration';
 
 addEventListener(`message`, ({ data }: { data: IInput }) => {
-  const COMPLETION_VALUE = 5;
+  const COMPLETION_VALUE = 6;
 
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 0 } as ITransformation);
 
@@ -125,9 +88,9 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
 
         return parts.map(id => items.get(id)).filter(item => item);
       }).reduce((prev, curr) => [...prev, ...curr], [])
-    ].map(item => {
-      item.hasParent = true;
-      return item;
+    ].map(childItem => {
+      childItem.parent = item;
+      return childItem;
     });
 
 
@@ -186,120 +149,58 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
         const item = items.get(itemId);
         if (!item) continue;
 
-        item.hasParent = true;
+        //item.parent = null;
+        items.delete(itemId);
       }
     }
   }
 
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 4 } as ITransformation);
 
-  const instanceGraphContent = new Array<string>();
+  if (!data.configuration.includeBranchesWithoutCAD) {
+    const emptyItems = Array.from(items.entries()).filter(([_, item]) => !item.filePath && (!item.children || !item.children.length));
 
-  const partIdLookup = new Map<string, number>();
+    for (const [id, item] of emptyItems) {
+      deleteEmptyItem(id, item, items);
+    }
+  }
 
-  const idTracker = [0];
+  postMessage({ completionValue: COMPLETION_VALUE, progressValue: 5 } as ITransformation);
 
-  const rootRefs = Array.from(items.entries()).filter(([_, item]) => !item.hasParent).map(([id]) =>
-    item2XML(items.get(id), data.configuration.sysRootPath, idTracker, instanceGraphContent, partIdLookup, data?.configuration?.includeBranchesWithoutCAD ?? false));
+  const outputDocumentContent = data.configuration.outputType === OutputType.PLMXML ? items2XML(items, data) : items2AJT(items, data);
 
-  const currentTime = new Date();
-  const timeString = `${currentTime.getHours().toString().padStart(2, `0`)}:${currentTime.getMinutes().toString().padStart(2, `0`)}:${currentTime.getSeconds().toString().padStart(2, `0`)}`;
-  const dateString = `${currentTime.getFullYear()}-${(currentTime.getMonth() + 1).toString().padStart(2, `0`)}-${currentTime.getDate().toString().padStart(2, `0`)}`;
+  const outputArrayBuffer = new TextEncoder().encode(outputDocumentContent).buffer;
 
-  const outputDocumentLines = [
-    `<?xml version="1.0" encoding="utf-8"?>`,
-    `<PLMXML xmlns="http://www.plmxml.org/Schemas/PLMXMLSchema" xmlns:vis="PLMXMLTcVisSchema" time="${timeString}" schemaVersion="6" author="Qpops" date="${dateString}">`,
-    `<ProductDef>`,
-    `<UserData><UserValue title="__TC-VIS_NO_UNITS" type="boolean" value="true"/></UserData>`,
-    `<InstanceGraph rootRefs="${rootRefs.join(` `)}">`,
-    ...instanceGraphContent,
-    `</InstanceGraph>`,
-    `</ProductDef>`,
-    `</PLMXML>`
-  ];
-
-  const outputArrayBuffer = new TextEncoder().encode(outputDocumentLines.join(`\n`)).buffer;
-
-  postMessage({ completionValue: COMPLETION_VALUE, progressValue: 5, arrayBuffer: outputArrayBuffer } as ITransformation, [outputArrayBuffer]);
+  postMessage({ completionValue: COMPLETION_VALUE, progressValue: 6, arrayBuffer: outputArrayBuffer } as ITransformation, [outputArrayBuffer]);
 });
 
-const doubleBackSlashRegExp = /(?<!^)\\{2,}/g;
-const doubleForwardSlashRegExp = /\//g;
+const deleteEmptyItem = (id: string, item: IItem, items: Map<string, IItem>) => {
+  if (item.filePath || (item.children && item.children.length)) return;
 
-const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: string[], partIdLookup: Map<string, number>, includeEmpty: boolean = false) => {
-  const childInstanceIds = (item.children ?? []).map(child => item2XML(child, sysRootPath, id, xmlElements, partIdLookup, includeEmpty)).filter(childId => childId !== null);
+  if (items.has(id))
+    items.delete(id);
 
-  if (!includeEmpty && !item.filePath && !childInstanceIds.length) return null;
+  const parent = item.parent;
+  if (parent) {
+    let childIndex = parent.children.indexOf(item);
 
-  const instanceId = ++id[0];
-
-  let filePath = item.filePath;
-  let representationXML = ``;
-
-  let location: string = null;
-
-  if (filePath) {
-    if (filePath.startsWith(`"`) && filePath.endsWith(`"`)) filePath = filePath.substring(1, filePath.length - 1);
-
-    location = `${filePath.replace(`#`, sysRootPath).replace(doubleForwardSlashRegExp, `\\`).replace(doubleBackSlashRegExp, `\\`)}`;
-
-    if (location.endsWith(`.cojt`)) {
-      const fullFilePathSegments = location.split(`\\`);
-      const fileName = fullFilePathSegments[fullFilePathSegments.length - 1];
-      const fileNameSegments = fileName.split(`.`);
-      const fileNameWithoutExtention = fileNameSegments.slice(0, fileNameSegments.length - 1).join(`.`);
-      location += `\\${fileNameWithoutExtention}.jt`;
+    while (childIndex > -1) {
+      parent.children.splice(childIndex, 1);
+      childIndex = parent.children.indexOf(item);
     }
 
-    representationXML = `<Representation format="JT" location="${location}"/>`;
-  }
+    const parentIds = Array.from(items.entries()).filter(([_, item]) => item === parent).map(([id]) => id);
 
-  const instanceRefs = `${childInstanceIds.length ? `instanceRefs="${childInstanceIds.join(' ')}" ` : ``}`;
-
-  let partId: number;
-
-  if (location) {
-    if (partIdLookup.has(location))
-      partId = partIdLookup.get(location);
-
-    else {
-      partId = ++id[0];
-      partIdLookup.set(location, partId);
-
-      xmlElements.push(`<Part id="${partId}" name="${item.title}" type="solid">${representationXML}</Part>`);
+    for (const parentId of parentIds) {
+      deleteEmptyItem(parentId, parent, items);
     }
   }
+};
 
-  else {
-    partId = ++id[0];
-    xmlElements.push(`<Part id="${partId}" name="${item.title}" ${instanceRefs}type="assembly"/>`);
-  }
-
-  const transformXML = item.transformationMatrix ? `<Transform>${item.transformationMatrix}</Transform>` : null;
-  const instanceXML = `<Instance id="${instanceId}" partRef="#${partId}"` + (transformXML ? `>${transformXML}</Instance>` : `/>`);
-
-  xmlElements.unshift(instanceXML);
-
-  return instanceId;
-}
-
-const ampRegExp = /&/g;
-const ltRegExp = /</g;
-const gtRegExp = />/g;
-const aposRegExp = /'/g;
-const quotRegExp = /"/g;
-
-const cleanStringForXML = (inputString: string) => inputString
-  //.replace(ampRegExp, `&amp;`)
-  .replace(ltRegExp, `&lt;`)
-  .replace(gtRegExp, `&gt;`)
-  .replace(aposRegExp, `&apos;`)
-  .replace(quotRegExp, `&quot;`);
-
-const getTitle = (number: string, name: string) => cleanStringForXML([number, name]
+const getTitle = (number: string, name: string) => [number, name]
   .filter(value => value)
-  .map(value => value.startsWith(`"`) && value.endsWith(`"`) ? value.substring(1, value.length - 1) : value).join(` - `));
+  .map(value => value.startsWith(`"`) && value.endsWith(`"`) ? value.substring(1, value.length - 1) : value).join(` - `);
 
 const eulerZYX2Matrix = (x: number, y: number, z: number, rx: number, ry: number, rz: number) => new Matrix4()
   .makeRotationFromEuler(new Euler(rx, ry, rz, `ZYX`))
-  .setPosition(x, y, z).toArray().join(` `);
+  .setPosition(x, y, z).toArray() as number[];//.join(` `) as string;

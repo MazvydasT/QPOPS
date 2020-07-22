@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { VideoOverlayService } from './video-overlay/video-overlay.service';
 import { BrowserFeatureDetectionService } from './browser-feature-detection.service';
-import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +10,7 @@ import { JsonPipe } from '@angular/common';
 export class AppComponent {
   version = {
     major: 1,
-    minor: 5,
+    minor: 6,
     patch: 0
   };
 
