@@ -7,6 +7,7 @@ import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TransformerComponent } from './transformer/transformer.component';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -33,6 +34,7 @@ import { VideoOverlayComponent } from './video-overlay/video-overlay.component';
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
     BrowserAnimationsModule,
     FormsModule,
+    HttpClientModule,
 
     MatCardModule,
     MatProgressBarModule,

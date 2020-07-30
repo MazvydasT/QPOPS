@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { VideoOverlayService } from './video-overlay/video-overlay.service';
 import { BrowserFeatureDetectionService } from './browser-feature-detection.service';
+import { RedirectService } from './redirect.service';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,7 @@ import { BrowserFeatureDetectionService } from './browser-feature-detection.serv
 export class AppComponent {
   version = {
     major: 1,
-    minor: 6,
+    minor: 7,
     patch: 0
   };
 
@@ -24,8 +25,11 @@ export class AppComponent {
 
   constructor(
     public videoOverlayService: VideoOverlayService,
-    private browserFeatureDetectionService: BrowserFeatureDetectionService
+    private browserFeatureDetectionService: BrowserFeatureDetectionService,
+    private redirectService: RedirectService
   ) {
+    this.redirectService.redirectToLoginIfNeeded();
+
     const preventDefault = (dragEvent: DragEvent) => {
       dragEvent.preventDefault();
       dragEvent.dataTransfer.dropEffect = `none`;
