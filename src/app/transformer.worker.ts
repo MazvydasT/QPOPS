@@ -11,7 +11,9 @@ import { items2XML } from './transformer.2xml';
 import { items2AJT } from './transformer.2ajt';
 import { OutputType } from './transformation-configuration';
 
-addEventListener(`message`, ({ data }: { data: IInput }) => {
+// addEventListener(`unhandledrejection`, event => { throw event.reason; });
+
+addEventListener(`message`, async ({ data }: { data: IInput }) => {
   const COMPLETION_VALUE = 6;
 
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 0 } as ITransformation);
@@ -42,7 +44,17 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
     parseNodeValue: false,
     attrValueProcessor: (attrValue: any, attrName: string) => attrName === `ExternalId` ? attrValue : null
   };
-  const objects = parse(text, parseOptions)?.Data?.Objects as { [key: string]: IDataObject[] };
+
+  let objects: { [key: string]: IDataObject[] };
+
+  try {
+    objects = parse(text, parseOptions)?.Data?.Objects;
+  }
+
+  catch (error) {
+    handleError(`Input file is not valid XML.`);
+    return;
+  }
 
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 1 } as ITransformation);
 
@@ -50,43 +62,46 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
   const supportingDataObjects = new Map<string, IDataObject>();
 
   for (let [objectType, dataObjects] of Object.entries(objects)) {
-    if (exludedNodes.indexOf(objectType) > -1) continue;
+    if (exludedNodes.indexOf(objectType) > -1) { continue; }
 
-    if (!Array.isArray(dataObjects)) dataObjects = [dataObjects];
+    if (!Array.isArray(dataObjects)) { dataObjects = [dataObjects]; }
 
     for (let i = 0, c = dataObjects.length; i < c; ++i) {
       const dataObject = dataObjects[i];
-      const id = dataObject["@_ExternalId"];
+      const id = dataObject['@_ExternalId'];
 
-      if (objectType !== `PmSource` && objectType !== `PmLayout` && !objectType.endsWith(`Prototype`) && (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype))
+      if (objectType !== `PmSource` && objectType !== `PmLayout` && !objectType.endsWith(`Prototype`) &&
+        (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype)) {
         items.set(id, {
-          dataObject: dataObject,
+          dataObject,
           title: getTitle(dataObject.number, dataObject.name)
         });
+      }
 
-      else
+      else {
         supportingDataObjects.set(id, dataObject);
+      }
     }
   }
 
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 2 } as ITransformation);
 
-  for (let item of items.values()) {
+  for (const item of items.values()) {
     const dataObject = item.dataObject;
 
     let children = dataObject.children?.item ?? [] as string[];
-    if (!Array.isArray(children)) children = [children];
+    if (!Array.isArray(children)) { children = [children]; }
 
     let inputFlows = dataObject.inputFlows?.item ?? [] as string[];
-    if (!Array.isArray(inputFlows)) inputFlows = [inputFlows];
+    if (!Array.isArray(inputFlows)) { inputFlows = [inputFlows]; }
 
     item.children = [
-      ...children.map(id => items.get(id)).filter(item => item),
+      ...children.map(id => items.get(id)).filter(childItem => childItem),
       ...inputFlows.map(id => {
         let parts = supportingDataObjects.get(id)?.parts?.item ?? [] as string[];
-        if (!Array.isArray(parts)) parts = [parts];
+        if (!Array.isArray(parts)) { parts = [parts]; }
 
-        return parts.map(id => items.get(id)).filter(item => item);
+        return parts.map(partId => items.get(partId)).filter(partItem => partItem);
       }).reduce((prev, curr) => [...prev, ...curr], [])
     ].map(childItem => {
       childItem.parent = item;
@@ -118,8 +133,9 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
           const ry = Number.parseFloat(absoluteLocation.ry);
           const rz = Number.parseFloat(absoluteLocation.rz);
 
-          if (x !== 0 || y !== 0 || z !== 0 || rx !== 0 || ry !== 0 || rz !== 0)
+          if (x !== 0 || y !== 0 || z !== 0 || rx !== 0 || ry !== 0 || rz !== 0) {
             item.transformationMatrix = eulerZYX2Matrix(x, y, z, rx, ry, rz);
+          }
         }
       }
     }
@@ -129,27 +145,26 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
 
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 3 } as ITransformation);
 
-  for (var supportingDataObject of supportingDataObjects.values()) {
+  for (const supportingDataObject of supportingDataObjects.values()) {
     let outputFlows = supportingDataObject.outputFlows?.item;
 
-    if (!outputFlows) continue;
+    if (!outputFlows) { continue; }
 
-    if (!Array.isArray(outputFlows)) outputFlows = [outputFlows];
+    if (!Array.isArray(outputFlows)) { outputFlows = [outputFlows]; }
 
-    for (let pmFlowId of outputFlows) {
+    for (const pmFlowId of outputFlows) {
       const flowObject = supportingDataObjects.get(pmFlowId);
-      if (!flowObject) continue;
+      if (!flowObject) { continue; }
 
       let parts = flowObject.parts?.item;
-      if (!parts) continue;
+      if (!parts) { continue; }
 
-      if (!Array.isArray(parts)) parts = [parts];
+      if (!Array.isArray(parts)) { parts = [parts]; }
 
-      for (let itemId of parts) {
+      for (const itemId of parts) {
         const item = items.get(itemId);
-        if (!item) continue;
+        if (!item) { continue; }
 
-        //item.parent = null;
         items.delete(itemId);
       }
     }
@@ -171,14 +186,19 @@ addEventListener(`message`, ({ data }: { data: IInput }) => {
 
   const outputArrayBuffer = new TextEncoder().encode(outputDocumentContent).buffer;
 
-  postMessage({ completionValue: COMPLETION_VALUE, progressValue: 6, arrayBuffer: outputArrayBuffer } as ITransformation, [outputArrayBuffer]);
+  postMessage({
+    completionValue: COMPLETION_VALUE,
+    progressValue: 6,
+    arrayBuffer: outputArrayBuffer
+  } as ITransformation, [outputArrayBuffer]);
 });
 
 const deleteEmptyItem = (id: string, item: IItem, items: Map<string, IItem>) => {
-  if (item.filePath || (item.children && item.children.length)) return;
+  if (item.filePath || (item.children && item.children.length)) { return; }
 
-  if (items.has(id))
+  if (items.has(id)) {
     items.delete(id);
+  }
 
   const parent = item.parent;
   if (parent) {
@@ -189,7 +209,7 @@ const deleteEmptyItem = (id: string, item: IItem, items: Map<string, IItem>) => 
       childIndex = parent.children.indexOf(item);
     }
 
-    const parentIds = Array.from(items.entries()).filter(([_, item]) => item === parent).map(([id]) => id);
+    const parentIds = Array.from(items.entries()).filter(([_, parentItem]) => parentItem === parent).map(([parentId]) => parentId);
 
     for (const parentId of parentIds) {
       deleteEmptyItem(parentId, parent, items);
@@ -197,10 +217,12 @@ const deleteEmptyItem = (id: string, item: IItem, items: Map<string, IItem>) => 
   }
 };
 
-const getTitle = (number: string, name: string) => [number, name]
+const getTitle = (itemNumber: string, name: string) => [itemNumber, name]
   .filter(value => value)
   .map(value => value.startsWith(`"`) && value.endsWith(`"`) ? value.substring(1, value.length - 1) : value).join(` - `);
 
 const eulerZYX2Matrix = (x: number, y: number, z: number, rx: number, ry: number, rz: number) => new Matrix4()
   .makeRotationFromEuler(new Euler(rx, ry, rz, `ZYX`))
-  .setPosition(x, y, z).toArray() as number[];//.join(` `) as string;
+  .setPosition(x, y, z).toArray() as number[];
+
+const handleError = (message: string) => postMessage({ completionValue: 1, progressValue: 1, errorMessage: message } as ITransformation);

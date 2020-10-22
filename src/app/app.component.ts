@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
-import { VideoOverlayService } from './video-overlay/video-overlay.service';
 import { BrowserFeatureDetectionService } from './browser-feature-detection.service';
+import { JtServerService } from './jt-server.service';
 import { RedirectService } from './redirect.service';
+import { VideoOverlayService } from './video-overlay/video-overlay.service';
+import { uint8ArrayToInt32, int32ToUint8Array } from './utils';
+
 
 @Component({
   selector: 'app-root',
@@ -28,6 +31,7 @@ export class AppComponent {
     private browserFeatureDetectionService: BrowserFeatureDetectionService,
     private redirectService: RedirectService
   ) {
+
     this.redirectService.redirectToLoginIfNeeded();
 
     const preventDefault = (dragEvent: DragEvent) => {

@@ -1,16 +1,19 @@
 import { Component } from '@angular/core';
-
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
-
-import { TransformerService } from '../transformer.service';
-import { ITransformation } from '../transformation';
-import { ITransformationConfiguration, OutputType } from "../transformation-configuration";
+import * as moment from 'moment';
+import { duration } from 'moment';
+import { animationFrameScheduler, combineLatest, Observable, of, scheduled } from 'rxjs';
+import { catchError, distinctUntilChanged, map, repeat, share, takeLast, takeUntil, tap } from 'rxjs/operators';
 import { StorageService } from '../storage.service';
+import { ITransformation } from '../transformation';
+import { ITransformationConfiguration, OutputType } from '../transformation-configuration';
+import { TransformerService } from '../transformer.service';
 
 interface ITransformationItem {
-  transformation: Observable<ITransformation>,
-  name: string
+  transformation: Observable<ITransformation>;
+
+  name: string;
+
+  runDuration: Observable<string>;
 }
 
 @Component({
@@ -18,6 +21,17 @@ interface ITransformationItem {
   styleUrls: ['./transformer.component.scss']
 })
 export class TransformerComponent {
+  private animationFrame = scheduled(of(null), animationFrameScheduler).pipe(
+    repeat(),
+    map(() => moment()),
+    distinctUntilChanged((prev, curr) =>
+      prev.year() === curr.year() &&
+      prev.dayOfYear() === curr.dayOfYear() &&
+      prev.hour() === curr.hour() &&
+      prev.minute() === curr.minute() &&
+      prev.second() === curr.second()),
+    share()
+  );
 
   transformationItems: ITransformationItem[] = [];
 
@@ -28,7 +42,8 @@ export class TransformerComponent {
   configuration: ITransformationConfiguration = {
     includeBranchesWithoutCAD: false,
     outputType: OutputType.PLMXML,
-    sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`
+    sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`,
+    ajt2jtConverterPath: `C:\\Program Files\\Siemens\\JtUtilities\\12_4\\bin64\\asciitojt.exe`
   };
 
   constructor(
@@ -42,8 +57,9 @@ export class TransformerComponent {
     setTimeout(() => {
       const currentConfiguration = Object.assign({}, this.configuration);
 
-      if (currentConfiguration.sysRootPath.trim().length === 0)
+      if (currentConfiguration.sysRootPath.trim().length === 0) {
         currentConfiguration.sysRootPath = undefined;
+      }
 
       this.storageService.set(`configuration`, currentConfiguration);
     });
@@ -96,7 +112,7 @@ export class TransformerComponent {
     const dataTransfer = dragEvent.dataTransfer;
     const files = Array.from(dataTransfer.files).filter(file => file.type === `text/xml`);
 
-    if (!files.length) return;
+    if (!files.length) { return; }
 
     this.transform(files);
   }
@@ -107,7 +123,7 @@ export class TransformerComponent {
   }
 
   go(files: FileList) {
-    if (!files || !files.length) return;
+    if (!files || !files.length) { return; }
 
     this.transform(Array.from(files));
   }
@@ -117,31 +133,57 @@ export class TransformerComponent {
   }
 
   private transform(files: File[]) {
-    if (!files || !files.length) return;
+    if (!files || !files.length) { return; }
 
     this.transformationItems = [
       ...files.map(file => {
         const name = file.name.split(`.`).slice(0, -1).join(`.`);
 
+        const transformation = this.transformService.transform(file, name, this.configuration).pipe(
+          catchError((err: Error) => of({ completionValue: 1, progressValue: 1, errorMessage: err.message } as ITransformation)),
+          tap(tranformation => {
+            if (tranformation.arrayBuffer) {
+              const outputType = this.configuration.outputType;
+
+              const outputBlob = new Blob([tranformation.arrayBuffer], {
+                type: outputType === OutputType.PLMXML ? `txt/xml` : (outputType === OutputType.AJT ? `text/plain` : 'application/octet-stream')
+              });
+              const outputBlobURL = URL.createObjectURL(outputBlob);
+
+              const linkELement = document.createElement(`a`);
+              linkELement.href = outputBlobURL;
+              linkELement.download = `${name}.${outputType === OutputType.PLMXML ? 'plmxml' : (outputType === OutputType.AJT ? 'ajt' : 'jt')}`;
+              linkELement.click();
+
+              linkELement.remove();
+              URL.revokeObjectURL(outputBlobURL);
+            }
+          }),
+          share()
+        );
+
         return {
-          name: name,
-          transformation: this.transformService.transform(file, this.configuration).pipe(
-            tap(tranformation => {
-              if (tranformation.arrayBuffer) {
-                const outputBlob = new Blob([tranformation.arrayBuffer], { type: this.configuration.outputType === OutputType.PLMXML ? `txt/xml` : `text/plain` });
-                const outputBlobURL = URL.createObjectURL(outputBlob);
+          name,
+          transformation,
 
-                const linkELement = document.createElement(`a`);
-                linkELement.href = outputBlobURL;
-                linkELement.download = `${name}.${this.configuration.outputType === OutputType.PLMXML ? 'plmxml' : 'ajt'}`;
-                linkELement.click();
+          runDuration: combineLatest([
+            of(moment()),
+            this.animationFrame
+          ]).pipe(
+            takeUntil(transformation.pipe(
+              takeLast(1)
+            )),
+            map(([start, current]) => {
+              const runDuration = duration(current.diff(start));
 
-                linkELement.remove();
-                URL.revokeObjectURL(outputBlobURL);
-              }
+              const hours = Math.floor(runDuration.asHours()).toString().padStart(2, '0');
+              const minutes = runDuration.minutes().toString().padStart(2, '0');
+              const seconds = runDuration.seconds().toString().padStart(2, '0');
+
+              return `${hours}:${minutes}:${seconds}`;
             })
           )
-        } as ITransformationItem
+        };
       }),
 
       ...this.transformationItems

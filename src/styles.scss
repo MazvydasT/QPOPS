@@ -14,3 +14,7 @@ body {
         opacity: 0.85 !important;
     }
 }
+
+.colour-warn {
+    color: mat-color($custom-theme-warn) !important;
+}

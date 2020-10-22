@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -9,41 +7,29 @@ import { of } from 'rxjs';
 export class RedirectService {
 
   constructor(private httpClient: HttpClient) { }
-
-  private isOfflineOrRedirected(url: string) {
-    return this.httpClient.head(url, {
-      headers: { 'ngsw-bypass': `` },
-      observe: `response`
-    }).pipe(
-      catchError(err => of(true)),
-      map(isOfflineOrRedirected => isOfflineOrRedirected === true)
-    );
-  }
-
-  redirectToLoginIfNeeded(force: boolean = false) {
-    return (force ? Promise.resolve(true) : this.httpClient.post(`_api/contextinfo`, null, {
+  
+  async redirectToLoginIfNeeded(force: boolean = false) {
+    const redirectToLogin = await (force ? Promise.resolve(true) : this.httpClient.post(`_api/contextinfo`, null, {
       headers: { 'ngsw-bypass': `` },
       observe: `response`
     })
       .toPromise()
       .catch(response => response)
-      .then(response => {
-        const status: number = response.status;
+      .then(response_1 => {
+        const status: number = response_1.status;
 
         return status === 0 || status === 404 || (status >= 200 && status < 300) ? false : true;
-      }))
-      .then(redirectToLogin => {
-        if (!redirectToLogin)
-          return false;
-          
-        return navigator?.serviceWorker?.getRegistration()
-          .then(registration => registration?.unregister() ?? false)
-          .then(unregistered => {
-            if (unregistered)
-              window.location.reload();
+      }));
+      
+    if (!redirectToLogin)
+      return false;
 
-            return unregistered;
-          });
-      })
+    const registration = await navigator?.serviceWorker?.getRegistration();
+    const unregistered = registration?.unregister() ?? false;
+
+    if (unregistered)
+      window.location.reload();
+
+    return unregistered;
   }
 }

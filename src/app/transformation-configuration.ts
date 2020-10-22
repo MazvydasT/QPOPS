@@ -1,10 +1,12 @@
 export enum OutputType {
     AJT,
-    PLMXML
+    PLMXML,
+    JT
 }
 
 export interface ITransformationConfiguration {
     includeBranchesWithoutCAD?: boolean;
     outputType: OutputType;
     sysRootPath: string;
+    ajt2jtConverterPath?: string;
 }

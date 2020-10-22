@@ -7,6 +7,7 @@
                 [(ngModel)]="configuration.outputType">
                 <mat-radio-button class="margin" [value]="ouputTypes.PLMXML">{{"PLMXML"}}</mat-radio-button>
                 <mat-radio-button class="margin" [value]="ouputTypes.AJT">{{"AJT"}}</mat-radio-button>
+                <mat-radio-button class="margin" [value]="ouputTypes.JT">{{"JT"}}</mat-radio-button>
             </mat-radio-group>
         </div>
 
@@ -45,8 +46,13 @@
                     <mat-card-content>
                         <mat-progress-bar [mode]="transformation?.progressValue === 0 ? 'indeterminate' : 'determinate'"
                             [value]="transformation?.progressValue / transformation?.completionValue * 100"
-                            [color]="transformation?.arrayBuffer ? 'accent' : 'primary'">
+                            [color]="transformation?.errorMessage ? 'warn' : transformation?.arrayBuffer ? 'accent' : 'primary'">
                         </mat-progress-bar>
+                        
+                        <h4 class="colour-warn">
+                            <span>{{transformationItem.runDuration | async}}</span>
+                            <span> Error: {{transformation?.errorMessage}}</span>
+                        </h4>
                     </mat-card-content>
                 </mat-card>
             </ng-container>

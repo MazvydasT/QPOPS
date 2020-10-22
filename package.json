@@ -25,6 +25,7 @@
     "@angular/service-worker": "~10.0.9",
     "core-js": "^3.6.5",
     "fast-xml-parser": "^3.17.3",
+    "moment": "^2.27.0",
     "rxjs": "~6.5.4",
     "three": "^0.117.1",
     "tslib": "^2.0.0",

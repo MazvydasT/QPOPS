@@ -1,4 +1,4 @@
-import { IItem } from './item'
+import { IItem } from './item';
 import { IInput } from './input';
 import { getFullFilePath } from './utils';
 
@@ -30,25 +30,26 @@ export const items2XML = (items: Map<string, IItem>, inputData: IInput) => {
 };
 
 const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: string[], partIdLookup: Map<string, number>) => {
-    const childInstanceIds = (item.children ?? []).map(child => item2XML(child, sysRootPath, id, xmlElements, partIdLookup)).filter(childId => childId !== null);
-
-    //if (!includeEmpty && !item.filePath && !childInstanceIds.length) return null;
+    const childInstanceIds = (item.children ?? [])
+        .map(child => item2XML(child, sysRootPath, id, xmlElements, partIdLookup))
+        .filter(childId => childId !== null);
 
     const instanceId = ++id[0];
 
-    let filePath = item.filePath;
+    const filePath = item.filePath;
 
-    let location = getFullFilePath(sysRootPath, filePath);
+    const location = getFullFilePath(sysRootPath, filePath);
 
-    let representationXML = location ? `<Representation format="JT" location="${location}"/>` : ``;
+    const representationXML = location ? `<Representation format="JT" location="${location}"/>` : ``;
 
     const instanceRefs = `${childInstanceIds.length ? `instanceRefs="${childInstanceIds.join(' ')}" ` : ``}`;
 
     let partId: number;
 
     if (location) {
-        if (partIdLookup.has(location))
+        if (partIdLookup.has(location)) {
             partId = partIdLookup.get(location);
+        }
 
         else {
             partId = ++id[0];
@@ -69,7 +70,7 @@ const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: s
     xmlElements.unshift(instanceXML);
 
     return instanceId;
-}
+};
 
 const ampRegExp = /&/g;
 const ltRegExp = /</g;
@@ -78,7 +79,7 @@ const aposRegExp = /'/g;
 const quotRegExp = /"/g;
 
 const cleanStringForXML = (inputString: string) => inputString
-    //.replace(ampRegExp, `&amp;`)
+    // .replace(ampRegExp, `&amp;`)
     .replace(ltRegExp, `&lt;`)
     .replace(gtRegExp, `&gt;`)
     .replace(aposRegExp, `&apos;`)
