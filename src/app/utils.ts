@@ -1,3 +1,5 @@
+import { encode } from 'he';
+
 const doubleBackSlashRegExp = /(?<!^)\\{2,}/g;
 const doubleForwardSlashRegExp = /\//g;
 
@@ -21,19 +23,7 @@ export const getFullFilePath = (sysRootPath: string, filePath: string) => {
     return fullFilePath;
 };
 
-
-const ampRegExp = /&/g;
-const ltRegExp = /</g;
-const gtRegExp = />/g;
-const quotRegExp = /"/g;
-const aposRegExp = /'/g;
-
-export const encodeXML = (input: string) => !input ? input : input
-    .replace(ampRegExp, '&amp;')
-    .replace(ltRegExp, '&lt;')
-    .replace(gtRegExp, '&gt;')
-    .replace(quotRegExp, '&quot;')
-    .replace(aposRegExp, '&apos;');
+export const encodeXML = (input: string) => !input ? input : encode(input, { useNamedReferences: true });
 
 export const maxInt32 = ((2 ** 32) / 2) - 1;
 export const minInt32 = ((2 ** 32) / 2) * -1;

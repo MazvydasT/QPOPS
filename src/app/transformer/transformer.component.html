@@ -48,10 +48,10 @@
                             [value]="transformation?.progressValue / transformation?.completionValue * 100"
                             [color]="transformation?.errorMessage ? 'warn' : transformation?.arrayBuffer ? 'accent' : 'primary'">
                         </mat-progress-bar>
-                        
-                        <h4 class="colour-warn">
+
+                        <h4 [class.colour-warn]="transformation?.errorMessage">
                             <span>{{transformationItem.runDuration | async}}</span>
-                            <span> Error: {{transformation?.errorMessage}}</span>
+                            <span *ngIf="transformation?.errorMessage"> | Error: {{transformation?.errorMessage}}</span>
                         </h4>
                     </mat-card-content>
                 </mat-card>

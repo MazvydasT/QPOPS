@@ -3,15 +3,17 @@
 import { Euler, Matrix4 } from 'three/build/three.module.js';
 
 import { parse, X2jOptions } from 'fast-xml-parser';
+import { decode } from 'he';
 
 import { IInput } from './input';
 import { ITransformation } from './transformation';
 import { IDataObject, IItem } from './item';
 import { items2XML } from './transformer.2xml';
 import { items2AJT } from './transformer.2ajt';
+import { items2JT } from './transformer.2jt';
 import { OutputType } from './transformation-configuration';
 
-// addEventListener(`unhandledrejection`, event => { throw event.reason; });
+import { getFullFilePath } from './utils';
 
 addEventListener(`message`, async ({ data }: { data: IInput }) => {
   const COMPLETION_VALUE = 6;
@@ -42,7 +44,8 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
     ignoreAttributes: false,
     stopNodes: exludedNodes,
     parseNodeValue: false,
-    attrValueProcessor: (attrValue: any, attrName: string) => attrName === `ExternalId` ? attrValue : null
+    attrValueProcessor: (attrValue: any, attrName: string) => attrName === `ExternalId` ? attrValue : null,
+    tagValueProcessor: (tagValue, tagName) => decode(tagValue)
   };
 
   let objects: { [key: string]: IDataObject[] };
@@ -72,10 +75,17 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
 
       if (objectType !== `PmSource` && objectType !== `PmLayout` && !objectType.endsWith(`Prototype`) &&
         (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype)) {
+
         items.set(id, {
           dataObject,
-          title: getTitle(dataObject.number, dataObject.name)
+          title: getTitle(dataObject.number, dataObject.name),
+          children: null,
+          filePath: null,
+          parent: null,
+          transformationMatrix: null,
+          attributes: null
         });
+
       }
 
       else {
@@ -116,9 +126,9 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
       if (prototypeObject) {
         item.title = getTitle(prototypeObject.catalogNumber, prototypeObject.name);
 
-        item.filePath = supportingDataObjects.get(
+        item.filePath = getFullFilePath(data.configuration.sysRootPath, supportingDataObjects.get(
           supportingDataObjects.get(prototypeObject.threeDRep)?.file
-        )?.fileName;
+        )?.fileName);
       }
 
       const layout = dataObject.layout;
@@ -182,9 +192,13 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
 
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 5 } as ITransformation);
 
-  const outputDocumentContent = data.configuration.outputType === OutputType.PLMXML ? items2XML(items, data) : items2AJT(items, data);
+  const outputType = data.configuration.outputType;
 
-  const outputArrayBuffer = new TextEncoder().encode(outputDocumentContent).buffer;
+  const outputDocumentContent = outputType === OutputType.PLMXML ? items2XML(items, data) :
+    (outputType === OutputType.AJT ? items2AJT(items, data) : null);
+
+  const outputArrayBuffer = outputType === OutputType.JT ? new Uint8Array(items2JT(items, data)).buffer :
+    new TextEncoder().encode(outputDocumentContent).buffer;
 
   postMessage({
     completionValue: COMPLETION_VALUE,

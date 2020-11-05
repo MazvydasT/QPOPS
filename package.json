@@ -1,6 +1,11 @@
 {
   "name": "qpops",
   "version": "0.0.0",
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -23,8 +28,10 @@
     "@angular/platform-browser-dynamic": "~10.0.9",
     "@angular/router": "~10.0.9",
     "@angular/service-worker": "~10.0.9",
+    "@types/he": "^1.1.1",
     "core-js": "^3.6.5",
     "fast-xml-parser": "^3.17.3",
+    "he": "^1.2.0",
     "moment": "^2.27.0",
     "rxjs": "~6.5.4",
     "three": "^0.117.1",
@@ -32,7 +39,7 @@
     "zone.js": "~0.10.2"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^0.1000.6",
+    "@angular-devkit/build-angular": "^0.1002.0",
     "@angular/cli": "~10.0.6",
     "@angular/compiler-cli": "~10.0.9",
     "@angular/language-service": "~10.0.9",

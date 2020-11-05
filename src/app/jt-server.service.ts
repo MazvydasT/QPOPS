@@ -132,7 +132,7 @@ const connectionRetryDelay = 5000;
   private sendCommand(command: ICommand) {
     const messageId = this.messageIdTracker++;
 
-    if (messageId === maxInt32 /*Number.MAX_SAFE_INTEGER*/) {
+    if (messageId === maxInt32) { // Number.MAX_SAFE_INTEGER
       this.messageIdTracker = minInt32; // Number.MIN_SAFE_INTEGER;
     }
 

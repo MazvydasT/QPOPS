@@ -13,6 +13,6 @@
   ],
   "include": [
     "src/**/*.spec.ts",
-    "src/**/*.d.ts"
+    "src/**/*.d.ts", "src/app/JSJT/JSJT.d.tsts", "src/app/JSJT/JSJT.ts", "src/app/JSJT/JSJT.ts", "src/app/JSJT/JSJT.ts"
   ]
 }

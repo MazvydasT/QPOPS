@@ -19,7 +19,8 @@ const item2AJT = (item: IItem, sysRootPath: string, level: number, lines: string
 
     const filePath = item.filePath;
     if (filePath) {
-        lines.push(`File "${getFullFilePath(sysRootPath, filePath)}"`);
+        // lines.push(`File "${getFullFilePath(sysRootPath, filePath)}"`);
+        lines.push(`File "${filePath}"`);
     }
 
     const transformationMatrix = item.transformationMatrix;

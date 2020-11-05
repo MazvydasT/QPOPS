@@ -12,7 +12,7 @@ import { tap, take } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class TransformerService {
-  constructor(private jtServerService: JtServerService) { }
+  constructor(/*private jtServerService: JtServerService*/) { }
 
   transform(file: File, name: string, options?: ITransformationConfiguration) {
     return new Observable<ITransformation>(subscriber => {
@@ -35,18 +35,18 @@ export class TransformerService {
             return;
           }
 
-          subscriber.next(options.outputType !== OutputType.JT ? data :
+          subscriber.next(/*options.outputType !== OutputType.JT ?*/ data /*:
             Object.assign({}, data, {
               completionValue: data.completionValue + 1,
               arrayBuffer: null
-            } as ITransformation));
+            } as ITransformation)*/);
 
           if (data.progressValue === data.completionValue) {
             terminateWorker();
 
-            if (options.outputType !== OutputType.JT) {
-              subscriber.complete();
-            }
+            // if (options.outputType !== OutputType.JT) {
+            subscriber.complete();
+            /*}
 
             else {
               this.jtServerService.ajt2jt(data.arrayBuffer, name, options.ajt2jtConverterPath).pipe(take(1)).subscribe(
@@ -61,7 +61,7 @@ export class TransformerService {
                 },
                 err => subscriber.error(err)
               );
-            }
+          }*/
           }
         };
 

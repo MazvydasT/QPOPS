@@ -1,6 +1,8 @@
 import { IItem } from './item';
 import { IInput } from './input';
-import { getFullFilePath } from './utils';
+import { getFullFilePath, encodeXML } from './utils';
+
+import { encode } from 'he';
 
 export const items2XML = (items: Map<string, IItem>, inputData: IInput) => {
     const instanceGraphContent = new Array<string>();
@@ -38,7 +40,8 @@ const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: s
 
     const filePath = item.filePath;
 
-    const location = getFullFilePath(sysRootPath, filePath);
+    // const location = getFullFilePath(sysRootPath, filePath);
+    const location = filePath;
 
     const representationXML = location ? `<Representation format="JT" location="${location}"/>` : ``;
 
@@ -55,13 +58,13 @@ const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: s
             partId = ++id[0];
             partIdLookup.set(location, partId);
 
-            xmlElements.push(`<Part id="${partId}" name="${cleanStringForXML(item.title)}" type="solid">${representationXML}</Part>`);
+            xmlElements.push(`<Part id="${partId}" name="${encodeXML(item.title)}" type="solid">${representationXML}</Part>`);
         }
     }
 
     else {
         partId = ++id[0];
-        xmlElements.push(`<Part id="${partId}" name="${cleanStringForXML(item.title)}" ${instanceRefs}type="assembly"/>`);
+        xmlElements.push(`<Part id="${partId}" name="${encodeXML(item.title)}" ${instanceRefs}type="assembly"/>`);
     }
 
     const transformXML = item.transformationMatrix ? `<Transform>${item.transformationMatrix.join(' ')}</Transform>` : null;
@@ -71,16 +74,3 @@ const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: s
 
     return instanceId;
 };
-
-const ampRegExp = /&/g;
-const ltRegExp = /</g;
-const gtRegExp = />/g;
-const aposRegExp = /'/g;
-const quotRegExp = /"/g;
-
-const cleanStringForXML = (inputString: string) => inputString
-    // .replace(ampRegExp, `&amp;`)
-    .replace(ltRegExp, `&lt;`)
-    .replace(gtRegExp, `&gt;`)
-    .replace(aposRegExp, `&apos;`)
-    .replace(quotRegExp, `&quot;`);
