@@ -2,15 +2,15 @@ import { IItem } from './item';
 import { IInput } from './input';
 import { getFullFilePath } from './utils';
 
-export const items2AJT = (items: Map<string, IItem>, data: IInput) => {
+export const items2AJT = (items: Map<string, IItem>) => {
     const rootItems = Array.from(items.values()).filter(item => !item.parent);
 
     const rootItem = rootItems.length === 1 ? rootItems[0] : { title: `Data`, children: rootItems } as IItem;
 
-    return item2AJT(rootItem, data.configuration.sysRootPath, 0, []).join(`\n`);
+    return item2AJT(rootItem, 0, []).join(`\n`);
 };
 
-const item2AJT = (item: IItem, sysRootPath: string, level: number, lines: string[]) => {
+const item2AJT = (item: IItem, level: number, lines: string[]) => {
     lines.push(`${level} ${!item.filePath ? 'ASM' : 'SUB'} "${item.title}"`);
 
     if (level === 0) {
@@ -19,7 +19,6 @@ const item2AJT = (item: IItem, sysRootPath: string, level: number, lines: string
 
     const filePath = item.filePath;
     if (filePath) {
-        // lines.push(`File "${getFullFilePath(sysRootPath, filePath)}"`);
         lines.push(`File "${filePath}"`);
     }
 
@@ -36,7 +35,7 @@ const item2AJT = (item: IItem, sysRootPath: string, level: number, lines: string
     const children = item.children;
     if (children) {
         for (const child of children) {
-            item2AJT(child, sysRootPath, level + 1, lines);
+            item2AJT(child, level + 1, lines);
         }
     }
 

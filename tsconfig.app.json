@@ -3,14 +3,18 @@
   "compilerOptions": {
     "outDir": "./out-tsc/app",
     "types": [],
-    // "allowJs": true
-    // "allowSyntheticDefaultImports": true
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true
   },
   "files": [
     "src/main.ts",
     "src/polyfills.ts"
   ],
   "include": [
-    "src/**/*.d.ts", "src/app/JSJT/JSJT.d.tsts", "src/app/JSJT/JSJT.ts", "src/app/JSJT/JSJT.ts", "src/app/JSJT/JSJT.ts"
+    "src/**/*.d.ts",
+    "src/app/JSJT/JSJT.d.tsts",
+    "src/app/JSJT/JSJT.ts",
+    "src/app/JSJT/JSJT.ts",
+    "src/app/JSJT/JSJT.ts"
   ]
 }

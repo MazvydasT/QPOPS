@@ -5,9 +5,9 @@
             <label>Output format:</label>
             <mat-radio-group class="displayFlex flexDirectionColumn" name="outputType"
                 [(ngModel)]="configuration.outputType">
+                <mat-radio-button class="margin" [value]="ouputTypes.JT">{{"JT"}}</mat-radio-button>
                 <mat-radio-button class="margin" [value]="ouputTypes.PLMXML">{{"PLMXML"}}</mat-radio-button>
                 <mat-radio-button class="margin" [value]="ouputTypes.AJT">{{"AJT"}}</mat-radio-button>
-                <mat-radio-button class="margin" [value]="ouputTypes.JT">{{"JT"}}</mat-radio-button>
             </mat-radio-group>
         </div>
 

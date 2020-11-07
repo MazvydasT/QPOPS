@@ -44,7 +44,10 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
     ignoreAttributes: false,
     stopNodes: exludedNodes,
     parseNodeValue: false,
-    attrValueProcessor: (attrValue: any, attrName: string) => attrName === `ExternalId` ? attrValue : null,
+
+    attrValueProcessor: (attrValue: any, attrName: string) =>
+      attrName === `ExternalId` ? decode(attrValue, { isAttributeValue: true }) : null,
+
     tagValueProcessor: (tagValue, tagName) => decode(tagValue)
   };
 
@@ -194,10 +197,10 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
 
   const outputType = data.configuration.outputType;
 
-  const outputDocumentContent = outputType === OutputType.PLMXML ? items2XML(items, data) :
-    (outputType === OutputType.AJT ? items2AJT(items, data) : null);
+  const outputDocumentContent = outputType === OutputType.PLMXML ? items2XML(items) :
+    (outputType === OutputType.AJT ? items2AJT(items) : null);
 
-  const outputArrayBuffer = outputType === OutputType.JT ? new Uint8Array(items2JT(items, data)).buffer :
+  const outputArrayBuffer = outputType === OutputType.JT ? new Uint8Array(items2JT(items)).buffer :
     new TextEncoder().encode(outputDocumentContent).buffer;
 
   postMessage({

@@ -4,7 +4,7 @@ import { getFullFilePath, encodeXML } from './utils';
 
 import { encode } from 'he';
 
-export const items2XML = (items: Map<string, IItem>, inputData: IInput) => {
+export const items2XML = (items: Map<string, IItem>) => {
     const instanceGraphContent = new Array<string>();
 
     const partIdLookup = new Map<string, number>();
@@ -12,7 +12,7 @@ export const items2XML = (items: Map<string, IItem>, inputData: IInput) => {
     const idTracker = [0];
 
     const rootRefs = Array.from(items.entries()).filter(([_, item]) => !item.parent).map(([id]) =>
-        item2XML(items.get(id), inputData.configuration.sysRootPath, idTracker, instanceGraphContent, partIdLookup));
+        item2XML(items.get(id), idTracker, instanceGraphContent, partIdLookup));
 
     const currentTime = new Date();
     const timeString = `${currentTime.getHours().toString().padStart(2, `0`)}:${currentTime.getMinutes().toString().padStart(2, `0`)}:${currentTime.getSeconds().toString().padStart(2, `0`)}`;
@@ -31,16 +31,15 @@ export const items2XML = (items: Map<string, IItem>, inputData: IInput) => {
     ].join(`\n`);
 };
 
-const item2XML = (item: IItem, sysRootPath: string, id: number[], xmlElements: string[], partIdLookup: Map<string, number>) => {
+const item2XML = (item: IItem, id: number[], xmlElements: string[], partIdLookup: Map<string, number>) => {
     const childInstanceIds = (item.children ?? [])
-        .map(child => item2XML(child, sysRootPath, id, xmlElements, partIdLookup))
+        .map(child => item2XML(child, id, xmlElements, partIdLookup))
         .filter(childId => childId !== null);
 
     const instanceId = ++id[0];
 
     const filePath = item.filePath;
 
-    // const location = getFullFilePath(sysRootPath, filePath);
     const location = filePath;
 
     const representationXML = location ? `<Representation format="JT" location="${location}"/>` : ``;
