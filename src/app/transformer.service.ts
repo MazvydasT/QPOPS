@@ -3,18 +3,29 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { IInput } from './input';
-import { ITransformationConfiguration, OutputType } from './transformation-configuration';
+import { ITransformationConfiguration } from './transformation-configuration';
 import { ITransformation } from './transformation';
-import { JtServerService } from './jt-server.service';
-import { tap, take } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TransformerService {
-  constructor(/*private jtServerService: JtServerService*/) { }
 
-  transform(file: File, name: string, options?: ITransformationConfiguration) {
+  private readonly maxConcurancy = (navigator?.hardwareConcurrency ?? 4) - 1;
+  private jobsInProgress = 0;
+
+  private readonly queue = new Array<() => void>();
+
+  constructor() { }
+
+  private processQueue() {
+    if (this.jobsInProgress < this.maxConcurancy && this.queue.length > 0) {
+      this.jobsInProgress++;
+      this.queue.shift()();
+    }
+  }
+
+  enqueueTransform(file: File, options?: ITransformationConfiguration) {
     return new Observable<ITransformation>(subscriber => {
       if (typeof Worker === 'undefined') {
         subscriber.error(new Error(`Web wrokers are not supported in this browser.`));
@@ -35,33 +46,15 @@ export class TransformerService {
             return;
           }
 
-          subscriber.next(/*options.outputType !== OutputType.JT ?*/ data /*:
-            Object.assign({}, data, {
-              completionValue: data.completionValue + 1,
-              arrayBuffer: null
-            } as ITransformation)*/);
+          subscriber.next(data);
 
           if (data.progressValue === data.completionValue) {
             terminateWorker();
 
-            // if (options.outputType !== OutputType.JT) {
             subscriber.complete();
-            /*}
 
-            else {
-              this.jtServerService.ajt2jt(data.arrayBuffer, name, options.ajt2jtConverterPath).pipe(take(1)).subscribe(
-                jtArrayBuffer => {
-                  subscriber.next(Object.assign({}, data, {
-                    completionValue: data.completionValue + 1,
-                    progressValue: data.progressValue + 1,
-                    arrayBuffer: jtArrayBuffer
-                  } as ITransformation));
-
-                  subscriber.complete();
-                },
-                err => subscriber.error(err)
-              );
-          }*/
+            this.jobsInProgress--;
+            this.processQueue();
           }
         };
 
@@ -69,6 +62,9 @@ export class TransformerService {
           subscriber.error(errorEvent);
 
           terminateWorker();
+
+          this.jobsInProgress--;
+          this.processQueue();
         };
 
         const input: IInput = {
@@ -79,7 +75,10 @@ export class TransformerService {
         worker.postMessage(input, [arrayBuffer]);
       };
 
-      file.arrayBuffer().then(processArrayBuffer);
+      this.queue.push(() => file.arrayBuffer().then(processArrayBuffer));
+      // file.arrayBuffer().then(processArrayBuffer);
+
+      this.processQueue();
 
       return () => terminateWorker();
     });

@@ -1,8 +1,6 @@
 import { IItem } from './item';
-import { IInput } from './input';
-import { getFullFilePath, encodeXML } from './utils';
+import { encodeXML } from './utils';
 
-import { encode } from 'he';
 
 export const items2XML = (items: Map<string, IItem>) => {
     const instanceGraphContent = new Array<string>();
@@ -18,7 +16,7 @@ export const items2XML = (items: Map<string, IItem>) => {
     const timeString = `${currentTime.getHours().toString().padStart(2, `0`)}:${currentTime.getMinutes().toString().padStart(2, `0`)}:${currentTime.getSeconds().toString().padStart(2, `0`)}`;
     const dateString = `${currentTime.getFullYear()}-${(currentTime.getMonth() + 1).toString().padStart(2, `0`)}-${currentTime.getDate().toString().padStart(2, `0`)}`;
 
-    return [
+    return new TextEncoder().encode([
         `<?xml version="1.0" encoding="utf-8"?>`,
         `<PLMXML xmlns="http://www.plmxml.org/Schemas/PLMXMLSchema" xmlns:vis="PLMXMLTcVisSchema" time="${timeString}" schemaVersion="6" author="Qpops" date="${dateString}">`,
         `<ProductDef>`,
@@ -28,7 +26,7 @@ export const items2XML = (items: Map<string, IItem>) => {
         `</InstanceGraph>`,
         `</ProductDef>`,
         `</PLMXML>`
-    ].join(`\n`);
+    ].join(`\n`)).buffer;
 };
 
 const item2XML = (item: IItem, id: number[], xmlElements: string[], partIdLookup: Map<string, number>) => {

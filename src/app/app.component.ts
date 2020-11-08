@@ -15,7 +15,7 @@ export class AppComponent {
   version = {
     major: 1,
     minor: 8,
-    patch: 0
+    patch: 1
   };
 
   howToLinks = [

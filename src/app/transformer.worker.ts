@@ -197,11 +197,8 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
 
   const outputType = data.configuration.outputType;
 
-  const outputDocumentContent = outputType === OutputType.PLMXML ? items2XML(items) :
-    (outputType === OutputType.AJT ? items2AJT(items) : null);
-
-  const outputArrayBuffer = outputType === OutputType.JT ? new Uint8Array(items2JT(items)).buffer :
-    new TextEncoder().encode(outputDocumentContent).buffer;
+  const outputArrayBuffer = outputType === OutputType.JT ? items2JT(items) :
+    (outputType === OutputType.PLMXML ? items2XML(items) : items2AJT(items));
 
   postMessage({
     completionValue: COMPLETION_VALUE,

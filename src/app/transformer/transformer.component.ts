@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import * as moment from 'moment';
 import { duration } from 'moment';
 import { animationFrameScheduler, combineLatest, Observable, of, scheduled } from 'rxjs';
-import { catchError, distinctUntilChanged, map, repeat, share, takeLast, takeUntil, tap } from 'rxjs/operators';
+import { catchError, distinctUntilChanged, map, repeat, share, take, takeLast, takeUntil, tap } from 'rxjs/operators';
 import { StorageService } from '../storage.service';
 import { ITransformation } from '../transformation';
 import { ITransformationConfiguration, OutputType } from '../transformation-configuration';
@@ -12,6 +12,8 @@ interface ITransformationItem {
   transformation: Observable<ITransformation>;
 
   name: string;
+
+  outputType: OutputType;
 
   runDuration: Observable<string>;
 }
@@ -139,11 +141,13 @@ export class TransformerComponent {
       ...files.map(file => {
         const name = file.name.split(`.`).slice(0, -1).join(`.`);
 
-        const transformation = this.transformService.transform(file, name, this.configuration).pipe(
+        const configuration = Object.assign({}, this.configuration);
+
+        const transformation = this.transformService.enqueueTransform(file, configuration).pipe(
           catchError((err: Error) => of({ completionValue: 1, progressValue: 1, errorMessage: err.message } as ITransformation)),
           tap(tranformation => {
             if (tranformation.arrayBuffer) {
-              const outputType = this.configuration.outputType;
+              const outputType = configuration.outputType;
 
               const outputBlob = new Blob([tranformation.arrayBuffer], {
                 type: outputType === OutputType.PLMXML ? `txt/xml` : (outputType === OutputType.AJT ? `text/plain` : 'application/octet-stream')
@@ -164,16 +168,24 @@ export class TransformerComponent {
 
         return {
           name,
+          outputType: configuration.outputType,
           transformation,
 
           runDuration: combineLatest([
-            of(moment()),
+            transformation.pipe(
+              take(1),
+              map(() => moment())
+            ),
             this.animationFrame
           ]).pipe(
             takeUntil(transformation.pipe(
               takeLast(1)
             )),
             map(([start, current]) => {
+              if (current.isBefore(start)) {
+                start = current;
+              }
+
               const runDuration = duration(current.diff(start));
 
               const hours = Math.floor(runDuration.asHours()).toString().padStart(2, '0');

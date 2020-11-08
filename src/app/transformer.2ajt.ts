@@ -1,13 +1,40 @@
 import { IItem } from './item';
-import { IInput } from './input';
-import { getFullFilePath } from './utils';
+
+const LFCharCode = `\n`.charCodeAt(0);
+const SpaceCharCode = ` `.charCodeAt(0);
 
 export const items2AJT = (items: Map<string, IItem>) => {
     const rootItems = Array.from(items.values()).filter(item => !item.parent);
 
     const rootItem = rootItems.length === 1 ? rootItems[0] : { title: `Data`, children: rootItems } as IItem;
 
-    return item2AJT(rootItem, 0, []).join(`\n`);
+    const rows = item2AJT(rootItem, 0, []);
+
+    let charCount = 0;
+
+    for (const row of rows) {
+        charCount += row.length;
+    }
+
+    const byteArray = new Uint8Array(charCount + rows.length);
+
+    charCount = 0;
+
+    for (const row of rows) {
+        for (let i = 0, c = row.length; i < c; ++i) {
+            let charCode = row.charCodeAt(i);
+
+            if (charCode < 32 || charCode > 126) {
+                charCode = SpaceCharCode;
+            }
+
+            byteArray[charCount++] = charCode;
+        }
+
+        byteArray[charCount++] = LFCharCode;
+    }
+
+    return byteArray.buffer;
 };
 
 const item2AJT = (item: IItem, level: number, lines: string[]) => {
