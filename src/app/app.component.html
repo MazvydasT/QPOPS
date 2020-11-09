@@ -1,12 +1,17 @@
 <ng-container *ngIf="supportsRequiredFeatures; else browserLacksFeatures">
     <div class="spaceAround header">
-        <h2 class="spaceRight">How to:</h2>
-        <ng-container *ngFor="let link of howToLinks; let i = index">
-            <h1 *ngIf="i > 0">→</h1>
-            <a mat-button color="primary" routerLink="." (click)="videoOverlayService.open(link.link)">{{link.name}}</a>
-        </ng-container>
+        <div class="howToContainer">
+            <h2 class="spaceRight noMargin">How to:</h2>
 
-        <h2 id="version" class="mat-h2">v{{version.major}}.{{version.minor}}.{{version.patch}}</h2>
+            <div class="howToContainer">
+                <ng-container *ngFor="let link of howToLinks; let i = index">
+                    <h1 class="noMargin" *ngIf="i > 0">→</h1>
+                    <a mat-button color="primary" routerLink="."
+                        (click)="videoOverlayService.open(link.link)">{{link.name}}</a>
+                </ng-container>
+            </div>
+        </div>
+        <h2 id="version" class="mat-h2 noMargin">v{{version.major}}.{{version.minor}}.{{version.patch}}</h2>
     </div>
 
     <router-outlet></router-outlet>

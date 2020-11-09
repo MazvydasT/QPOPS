@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import * as moment from 'moment';
 import { duration } from 'moment';
+import { cloneDeep, merge } from 'lodash';
 import { animationFrameScheduler, combineLatest, Observable, of, scheduled } from 'rxjs';
 import { catchError, distinctUntilChanged, map, repeat, share, take, takeLast, takeUntil, tap } from 'rxjs/operators';
 import { StorageService } from '../storage.service';
 import { ITransformation } from '../transformation';
-import { ITransformationConfiguration, OutputType } from '../transformation-configuration';
+import { ContentType, IContentTypeSelection, ITransformationConfiguration, OutputType } from '../transformation-configuration';
 import { TransformerService } from '../transformer.service';
 
 interface ITransformationItem {
@@ -40,24 +41,32 @@ export class TransformerComponent {
   acceptDrop: boolean = null;
 
   ouputTypes = OutputType;
+  contentTypes = ContentType;
 
   configuration: ITransformationConfiguration = {
     includeBranchesWithoutCAD: false,
     outputType: OutputType.PLMXML,
     sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`,
-    ajt2jtConverterPath: `C:\\Program Files\\Siemens\\JtUtilities\\12_4\\bin64\\asciitojt.exe`
+    ajt2jtConverterPath: `C:\\Program Files\\Siemens\\JtUtilities\\12_4\\bin64\\asciitojt.exe`,
+    selectedContentTypes: Array.from(Object.values(ContentType))
+      .filter(v => typeof v === `number`)
+      .map((v): IContentTypeSelection => ({ contentType: (v as ContentType), selected: v === ContentType.Product }))
   };
 
   constructor(
     private transformService: TransformerService,
     private storageService: StorageService
   ) {
-    Object.assign(this.configuration, storageService.get<ITransformationConfiguration>(`configuration`) ?? {});
+    merge(this.configuration, storageService.get<ITransformationConfiguration>(`configuration`) ?? {});
   }
 
-  onConfigurationChnage() {
+  countNumberOfSelectedContentTypes() {
+    return this.configuration.selectedContentTypes.filter(t => t.selected).length;
+  }
+
+  onConfigurationChange() {
     setTimeout(() => {
-      const currentConfiguration = Object.assign({}, this.configuration);
+      const currentConfiguration = { ...this.configuration };
 
       if (currentConfiguration.sysRootPath.trim().length === 0) {
         currentConfiguration.sysRootPath = undefined;
@@ -141,7 +150,7 @@ export class TransformerComponent {
       ...files.map(file => {
         const name = file.name.split(`.`).slice(0, -1).join(`.`);
 
-        const configuration = Object.assign({}, this.configuration);
+        const configuration = cloneDeep(this.configuration);
 
         const transformation = this.transformService.enqueueTransform(file, configuration).pipe(
           catchError((err: Error) => of({ completionValue: 1, progressValue: 1, errorMessage: err.message } as ITransformation)),

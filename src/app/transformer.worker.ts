@@ -11,7 +11,7 @@ import { IDataObject, IItem } from './item';
 import { items2XML } from './transformer.2xml';
 import { items2AJT } from './transformer.2ajt';
 import { items2JT } from './transformer.2jt';
-import { OutputType } from './transformation-configuration';
+import { OutputType, ContentType } from './transformation-configuration';
 
 import { getFullFilePath } from './utils';
 
@@ -23,20 +23,52 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
   const exludedNodes = [
     `Human`,
     `PmAttachment`,
-    `PmCompoundResource`,
     `PmImage`,
+    `PmVariantSet`,
+    `ScoreableOperation`
+  ];
+
+  const requiredForProduct = [
+    `CompoundProcess`,
+    `HumanOperation`,
+    `PmCompoundOperation`,
+    `PmCompoundPart`,
+    `PmOperation`,
+    `PmPartInstance`,
+    `PmPartPrototype`,
+    `PmPartPrototype`,
+    `PrLineProcess`,
+    `PrPlantProcess`,
+    `PrStationProcess`,
+    `PrZoneProcess`
+  ];
+
+  const requiredForResources = [
+    `PmCompoundResource`,
     `PmPartPrototypeUsage`,
     `PmResourcePlaceholder`,
     `PmToolInstance`,
     `PmToolPrototype`,
-    `PmVariantSet`,
     `PrLine`,
     `PrPlant`,
     `PrStation`,
     `PrZone`,
-    `ScoreableOperation`,
     `Station_Geometry`
   ];
+
+  for (const contentSelection of data.configuration.selectedContentTypes) {
+    if (!contentSelection.selected) {
+      switch (contentSelection.contentType) {
+        case ContentType.Resource:
+          exludedNodes.push(...requiredForResources);
+          break;
+
+        case ContentType.Product:
+          exludedNodes.push(...requiredForProduct);
+          break;
+      }
+    }
+  }
 
   const text = new TextDecoder().decode(data.arrayBuffer);
 
@@ -76,17 +108,22 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
       const dataObject = dataObjects[i];
       const id = dataObject['@_ExternalId'];
 
+      const isProduct = requiredForProduct.includes(objectType);
+      const isResource = requiredForResources.includes(objectType);
+
       if (objectType !== `PmSource` && objectType !== `PmLayout` && !objectType.endsWith(`Prototype`) &&
-        (dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype)) {
+        (isProduct || isResource)
+        /*(dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype)*/) {
 
         items.set(id, {
+          type: isProduct ? ContentType.Product : ContentType.Resource,
           dataObject,
           title: getTitle(dataObject.number, dataObject.name),
           children: null,
           filePath: null,
           parent: null,
           transformationMatrix: null,
-          attributes: null
+          attributes: null,
         });
 
       }
@@ -196,6 +233,12 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 5 } as ITransformation);
 
   const outputType = data.configuration.outputType;
+
+  for (const item of items.values()) {
+    if (!item.parent && item.type === ContentType.Resource) {
+      item.title = `Resource: ${item.title}`;
+    }
+  }
 
   const outputArrayBuffer = outputType === OutputType.JT ? items2JT(items) :
     (outputType === OutputType.PLMXML ? items2XML(items) : items2AJT(items));

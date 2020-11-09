@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -37,6 +38,7 @@ import { VideoOverlayComponent } from './video-overlay/video-overlay.component';
     HttpClientModule,
 
     MatCardModule,
+    MatCheckboxModule,
     MatProgressBarModule,
     MatButtonModule,
     MatProgressSpinnerModule,

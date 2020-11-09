@@ -1,3 +1,5 @@
+import { ContentType } from './transformation-configuration';
+
 export interface IDataObject {
   '@_ExternalId': string;
 
@@ -29,6 +31,8 @@ export interface IDataObject {
 }
 
 export interface IItem {
+  type: ContentType;
+
   title: string;
 
   children: IItem[];

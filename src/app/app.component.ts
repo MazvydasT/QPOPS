@@ -14,8 +14,8 @@ import { uint8ArrayToInt32, int32ToUint8Array } from './utils';
 export class AppComponent {
   version = {
     major: 1,
-    minor: 8,
-    patch: 1
+    minor: 9,
+    patch: 0
   };
 
   howToLinks = [

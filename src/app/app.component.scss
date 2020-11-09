@@ -8,11 +8,22 @@
 .header {
     display: flex;
     flex-flow: row;
+    flex-wrap: wrap-reverse;
     align-items: flex-start;
 
     width: 100%;
     padding-top: 8px;
     box-sizing: border-box;
+}
+
+.howToContainer {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.noMargin
+ {
+    margin-bottom: 0;
 }
 
 #version {
