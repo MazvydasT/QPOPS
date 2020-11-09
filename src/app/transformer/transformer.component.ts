@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import * as moment from 'moment';
 import { duration } from 'moment';
-import { cloneDeep, merge } from 'lodash';
+import { cloneDeep, merge } from 'lodash-es';
 import { animationFrameScheduler, combineLatest, Observable, of, scheduled } from 'rxjs';
 import { catchError, distinctUntilChanged, map, repeat, share, take, takeLast, takeUntil, tap } from 'rxjs/operators';
 import { StorageService } from '../storage.service';
