@@ -11,7 +11,10 @@
                 </ng-container>
             </div>
         </div>
+        
         <h2 id="version" class="mat-h2 noMargin">v{{version.major}}.{{version.minor}}.{{version.patch}}</h2>
+
+        <button *ngIf="swUpdate.available | async" class="spaceLeft" mat-raised-button color="accent" (click)="activateUpdate()">Update</button>
     </div>
 
     <router-outlet></router-outlet>

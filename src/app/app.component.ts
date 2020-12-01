@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { SwUpdate } from '@angular/service-worker';
 import { BrowserFeatureDetectionService } from './browser-feature-detection.service';
 import { RedirectService } from './redirect.service';
 import { VideoOverlayService } from './video-overlay/video-overlay.service';
@@ -12,7 +13,7 @@ import { VideoOverlayService } from './video-overlay/video-overlay.service';
 export class AppComponent {
   version = {
     major: 1,
-    minor: 10,
+    minor: 11,
     patch: 0
   };
 
@@ -27,9 +28,9 @@ export class AppComponent {
   constructor(
     public videoOverlayService: VideoOverlayService,
     private browserFeatureDetectionService: BrowserFeatureDetectionService,
-    private redirectService: RedirectService
+    private redirectService: RedirectService,
+    public swUpdate: SwUpdate
   ) {
-
     this.redirectService.redirectToLoginIfNeeded();
 
     const preventDefault = (dragEvent: DragEvent) => {
@@ -38,5 +39,9 @@ export class AppComponent {
     };
 
     [`dragover`, `drop`].forEach(eventName => window.addEventListener(eventName, preventDefault, false));
+  }
+
+  activateUpdate() {
+    this.swUpdate.activateUpdate().then(() => document.location.reload());
   }
 }
