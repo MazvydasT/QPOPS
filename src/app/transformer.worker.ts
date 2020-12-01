@@ -123,7 +123,7 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
           filePath: null,
           parent: null,
           transformationMatrix: null,
-          attributes: null,
+          attributes: new Map(),
         });
 
       }
@@ -159,6 +159,8 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
     });
 
 
+    let tceRevision: string = null;
+
     const prototype = dataObject.prototype;
     if (prototype) {
       const prototypeObject = supportingDataObjects.get(prototype);
@@ -169,6 +171,12 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
         item.filePath = getFullFilePath(data.configuration.sysRootPath, supportingDataObjects.get(
           supportingDataObjects.get(prototypeObject.threeDRep)?.file
         )?.fileName);
+
+        item.attributes.set(`3D file`, item.filePath);
+
+        if (prototypeObject?.TCe_Revision) {
+          tceRevision = prototypeObject.TCe_Revision;
+        }
       }
 
       const layout = dataObject.layout;
@@ -188,6 +196,26 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
           }
         }
       }
+    }
+
+    const status = dataObject?.NodeInfo?.status;
+
+    if (status) {
+      item.attributes.set(`Created by`, status.createdBy);
+      item.attributes.set(`Last modified by`, status.lastModifiedBy);
+      item.attributes.set(`Date`, status.modificationDate);
+    }
+
+    if (!tceRevision && dataObject?.TCe_Revision) {
+      tceRevision = dataObject.TCe_Revision;
+    }
+
+    if (tceRevision) {
+      item.attributes.set(`TCe_Revision`, tceRevision);
+    }
+
+    if (dataObject?.Comment2) {
+      item.attributes.set(`Owner CDSID`, dataObject.Comment2);
     }
 
     item.dataObject = null;

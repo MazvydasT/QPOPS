@@ -26,8 +26,18 @@ export interface IDataObject {
       x: string,
       y: string,
       z: string
+    },
+
+    status?: {
+      createdBy: string,
+      lastModifiedBy: string,
+      modificationDate: string
     }
   };
+
+  TCe_Revision?: string;
+
+  Comment2?: string;
 }
 
 export interface IItem {

@@ -1,9 +1,7 @@
 import { Component } from '@angular/core';
 import { BrowserFeatureDetectionService } from './browser-feature-detection.service';
-import { JtServerService } from './jt-server.service';
 import { RedirectService } from './redirect.service';
 import { VideoOverlayService } from './video-overlay/video-overlay.service';
-import { uint8ArrayToInt32, int32ToUint8Array } from './utils';
 
 
 @Component({
@@ -14,8 +12,8 @@ import { uint8ArrayToInt32, int32ToUint8Array } from './utils';
 export class AppComponent {
   version = {
     major: 1,
-    minor: 9,
-    patch: 1
+    minor: 10,
+    patch: 0
   };
 
   howToLinks = [
