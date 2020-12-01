@@ -45,7 +45,7 @@ export class TransformerComponent {
 
   configuration: ITransformationConfiguration = {
     includeBranchesWithoutCAD: false,
-    outputType: OutputType.PLMXML,
+    outputType: OutputType.JT,
     sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`,
     ajt2jtConverterPath: `C:\\Program Files\\Siemens\\JtUtilities\\12_4\\bin64\\asciitojt.exe`,
     selectedContentTypes: Array.from(Object.values(ContentType))
@@ -57,7 +57,7 @@ export class TransformerComponent {
     private transformService: TransformerService,
     private storageService: StorageService
   ) {
-    merge(this.configuration, storageService.get<ITransformationConfiguration>(`configuration`) ?? {});
+    merge(this.configuration, storageService.get<ITransformationConfiguration>(`configuration`) ?? {}, { outputType: OutputType.JT });
   }
 
   countNumberOfSelectedContentTypes() {
