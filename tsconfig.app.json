@@ -9,10 +9,6 @@
     "src/polyfills.ts"
   ],
   "include": [
-    "src/**/*.d.ts",
-    "src/app/JSJT/JSJT.d.tsts",
-    "src/app/JSJT/JSJT.ts",
-    "src/app/JSJT/JSJT.ts",
-    "src/app/JSJT/JSJT.ts"
+    "src/**/*.d.ts"
   ]
 }
