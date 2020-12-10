@@ -99,6 +99,7 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
   const items = new Map<string, IItem>();
   const supportingDataObjects = new Map<string, IDataObject>();
 
+  // eslint-disable-next-line prefer-const
   for (let [objectType, dataObjects] of Object.entries(objects)) {
     if (exludedNodes.indexOf(objectType) > -1) { continue; }
 
@@ -112,8 +113,7 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
       const isResource = requiredForResources.includes(objectType);
 
       if (objectType !== `PmSource` && objectType !== `PmLayout` && !objectType.endsWith(`Prototype`) &&
-        (isProduct || isResource)
-        /*(dataObject.children?.item || dataObject.inputFlows?.item || dataObject.prototype)*/) {
+        (isProduct || isResource)) {
 
         items.set(id, {
           type: isProduct ? ContentType.Product : ContentType.Resource,
