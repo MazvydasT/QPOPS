@@ -14,7 +14,7 @@ export class AppComponent {
   version = {
     major: 1,
     minor: 11,
-    patch: 0
+    patch: 1
   };
 
   howToLinks = [
@@ -31,6 +31,7 @@ export class AppComponent {
     private redirectService: RedirectService,
     public swUpdate: SwUpdate
   ) {
+
     this.redirectService.redirectToLoginIfNeeded();
 
     const preventDefault = (dragEvent: DragEvent) => {
