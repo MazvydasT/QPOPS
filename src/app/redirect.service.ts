@@ -26,7 +26,7 @@ export class RedirectService {
     }
 
     const registration = await navigator?.serviceWorker?.getRegistration();
-    const unregistered = registration?.unregister() ?? false;
+    const unregistered = (await registration?.unregister()) ?? false;
 
     if (unregistered) {
       window.location.reload();
