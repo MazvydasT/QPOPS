@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { ContentType } from './transformation-configuration';
 
 export interface IDataObject {
   '@_ExternalId': string;
 
   name?: string;
+  // eslint-disable-next-line id-blacklist
   number?: string;
   catalogNumber?: string;
 
@@ -20,19 +22,19 @@ export interface IDataObject {
 
   NodeInfo?: {
     absoluteLocation?: {
-      rx: string,
-      ry: string,
-      rz: string,
-      x: string,
-      y: string,
-      z: string
-    },
+      rx: string;
+      ry: string;
+      rz: string;
+      x: string;
+      y: string;
+      z: string;
+    };
 
     status?: {
-      createdBy: string,
-      lastModifiedBy: string,
-      modificationDate: string
-    }
+      createdBy: string;
+      lastModifiedBy: string;
+      modificationDate: string;
+    };
   };
 
   TCe_Revision?: string;

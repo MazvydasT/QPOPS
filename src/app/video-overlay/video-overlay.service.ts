@@ -11,13 +11,6 @@ import { VIDEO_OVERLAY_DATA } from './video-overlay.tokens';
 export class VideoOverlayService {
   constructor(private overlay: Overlay, private injector: Injector) { }
 
-  private createInjector(videoSource: string, overlayRef: OverlayRef) {
-    const injectorTokens = new WeakMap();
-    injectorTokens.set(OverlayRef, overlayRef);
-    injectorTokens.set(VIDEO_OVERLAY_DATA, videoSource);
-    return new PortalInjector(this.injector, injectorTokens);
-  }
-
   open(videoSource: string) {
     const overlayRef = this.overlay.create({
       disposeOnNavigation: true,
@@ -34,5 +27,12 @@ export class VideoOverlayService {
     overlayRef.backdropClick().pipe(take(1)).toPromise().then(_ => overlayRef.dispose());
 
     return overlayRef;
+  }
+
+  private createInjector(videoSource: string, overlayRef: OverlayRef) {
+    const injectorTokens = new WeakMap();
+    injectorTokens.set(OverlayRef, overlayRef);
+    injectorTokens.set(VIDEO_OVERLAY_DATA, videoSource);
+    return new PortalInjector(this.injector, injectorTokens);
   }
 }

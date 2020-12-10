@@ -7,6 +7,6 @@ importScripts(
     './assets/JSJT/JSJT.min.js'
 );
 
-const Convert: (items: IItem[]) => number[] = (self as any).JSJT.Items2JT.Convert;
+const convert: (items: IItem[]) => number[] = (self as any).JSJT.Items2JT.Convert;
 
-export const items2JT = (items: Map<string, IItem>) => new Uint8Array(Convert(Array.from(items.values()))).buffer;
+export const items2JT = (items: Map<string, IItem>) => new Uint8Array(convert(Array.from(items.values()))).buffer;

@@ -1,7 +1,7 @@
 import { IItem } from './item';
 
-const LFCharCode = `\n`.charCodeAt(0);
-const SpaceCharCode = ` `.charCodeAt(0);
+const LF_CHAR_CODE = `\n`.charCodeAt(0);
+const SPACE_CHAR_CODE = ` `.charCodeAt(0);
 
 export const items2AJT = (items: Map<string, IItem>) => {
     const rootItems = Array.from(items.values()).filter(item => !item.parent);
@@ -25,13 +25,13 @@ export const items2AJT = (items: Map<string, IItem>) => {
             let charCode = row.charCodeAt(i);
 
             if (charCode < 32 || charCode > 126) {
-                charCode = SpaceCharCode;
+                charCode = SPACE_CHAR_CODE;
             }
 
             byteArray[charCount++] = charCode;
         }
 
-        byteArray[charCount++] = LFCharCode;
+        byteArray[charCount++] = LF_CHAR_CODE;
     }
 
     return byteArray.buffer;

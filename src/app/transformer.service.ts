@@ -18,13 +18,6 @@ export class TransformerService {
 
   constructor() { }
 
-  private processQueue() {
-    if (this.jobsInProgress < this.maxConcurancy && this.queue.length > 0) {
-      this.jobsInProgress++;
-      this.queue.shift()();
-    }
-  }
-
   enqueueTransform(file: File, options?: ITransformationConfiguration) {
     return new Observable<ITransformation>(subscriber => {
       if (typeof Worker === 'undefined') {
@@ -82,5 +75,12 @@ export class TransformerService {
 
       return () => terminateWorker();
     });
+  }
+
+  private processQueue() {
+    if (this.jobsInProgress < this.maxConcurancy && this.queue.length > 0) {
+      this.jobsInProgress++;
+      this.queue.shift()();
+    }
   }
 }

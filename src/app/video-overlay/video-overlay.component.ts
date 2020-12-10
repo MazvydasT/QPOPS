@@ -9,15 +9,15 @@ import { VIDEO_OVERLAY_DATA } from './video-overlay.tokens';
   styleUrls: ['./video-overlay.component.scss']
 })
 export class VideoOverlayComponent {
-  @HostListener(`document:keydown`, [`$event`]) private handleKeydown(event: KeyboardEvent) {
-    if (event.keyCode === 27/*ESCAPE*/)
-      this.overlayRef.dispose();
-  }
-
   loading = true;
 
   constructor(
     private overlayRef: OverlayRef,
     @Inject(VIDEO_OVERLAY_DATA) public videoSource: string
   ) { }
+
+  @HostListener(`document:keydown`, [`$event`])
+  private handleKeydown(event: KeyboardEvent) {
+    if (event.code === `Escape`) { this.overlayRef.dispose(); }
+  }
 }

@@ -13,11 +13,14 @@ export const items2XML = (items: Map<string, IItem>) => {
         item2XML(items.get(id), idTracker, instanceGraphContent, partIdLookup));
 
     const currentTime = new Date();
+    // eslint-disable-next-line max-len
     const timeString = `${currentTime.getHours().toString().padStart(2, `0`)}:${currentTime.getMinutes().toString().padStart(2, `0`)}:${currentTime.getSeconds().toString().padStart(2, `0`)}`;
+    // eslint-disable-next-line max-len
     const dateString = `${currentTime.getFullYear()}-${(currentTime.getMonth() + 1).toString().padStart(2, `0`)}-${currentTime.getDate().toString().padStart(2, `0`)}`;
 
     return new TextEncoder().encode([
         `<?xml version="1.0" encoding="utf-8"?>`,
+        // eslint-disable-next-line max-len
         `<PLMXML xmlns="http://www.plmxml.org/Schemas/PLMXMLSchema" xmlns:vis="PLMXMLTcVisSchema" time="${timeString}" schemaVersion="6" author="Qpops" date="${dateString}">`,
         `<ProductDef>`,
         `<UserData><UserValue title="__TC-VIS_NO_UNITS" type="boolean" value="true"/></UserData>`,
