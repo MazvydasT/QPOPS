@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { distinctUntilChanged, flatMap, shareReplay, map } from 'rxjs/operators';
@@ -69,7 +70,9 @@ const connectionRetryDelay = 5000;
   });
 
   private serverVersion = new BehaviorSubject(null);
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   public version = this.serverVersion.pipe(distinctUntilChanged(), shareReplay(1));
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   public online = this.version.pipe(flatMap(v => of(!!v)));
 
   private messageIdTracker = minInt32; // Number.MIN_SAFE_INTEGER;
@@ -78,6 +81,19 @@ const connectionRetryDelay = 5000;
 
   constructor() {
     this.subscribeToWebSocket();
+  }
+
+  public ajt2jt(ajtData: ArrayBuffer, fileName: string, ajt2jtConverterPath: string) {
+    return this.sendCommand({
+      Name: `convertAjtToJt`,
+      Arguments: {
+        ajt2jt: ajt2jtConverterPath,
+        fileName
+      },
+      BinaryData: [
+        new Uint8Array(ajtData)
+      ]
+    });
   }
 
   private subscribeToWebSocket(delay: number = 0) {
@@ -152,19 +168,5 @@ const connectionRetryDelay = 5000;
     this.sendCommand({ Name: `getVersion` }).toPromise()
       .catch(() => null as string)
       .then(v => this.serverVersion.next(v));
-  }
-
-  public ajt2jt(ajtData: ArrayBuffer, fileName: string, ajt2jtConverterPath: string) {
-    return this.sendCommand({
-      Name: `convertAjtToJt`,
-      Arguments: {
-        ajt2jt: ajt2jtConverterPath,
-        fileName
-        // ajtSource
-      },
-      BinaryData: [
-        new Uint8Array(ajtData)
-      ]
-    });
   }
 }

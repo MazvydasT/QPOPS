@@ -24,18 +24,6 @@ interface ITransformationItem {
   styleUrls: ['./transformer.component.scss']
 })
 export class TransformerComponent {
-  private animationFrame = scheduled(of(null), animationFrameScheduler).pipe(
-    repeat(),
-    map(() => moment()),
-    distinctUntilChanged((prev, curr) =>
-      prev.year() === curr.year() &&
-      prev.dayOfYear() === curr.dayOfYear() &&
-      prev.hour() === curr.hour() &&
-      prev.minute() === curr.minute() &&
-      prev.second() === curr.second()),
-    share()
-  );
-
   transformationItems: ITransformationItem[] = [];
 
   acceptDrop: boolean = null;
@@ -52,6 +40,19 @@ export class TransformerComponent {
       .filter(v => typeof v === `number`)
       .map((v): IContentTypeSelection => ({ contentType: (v as ContentType), selected: v === ContentType.Product }))
   };
+
+  private animationFrame = scheduled(of(null), animationFrameScheduler).pipe(
+    repeat(),
+    map(() => moment()),
+    distinctUntilChanged((prev, curr) =>
+      prev.year() === curr.year() &&
+      prev.dayOfYear() === curr.dayOfYear() &&
+      prev.hour() === curr.hour() &&
+      prev.minute() === curr.minute() &&
+      prev.second() === curr.second()),
+    share()
+  );
+
 
   constructor(
     private transformService: TransformerService,
@@ -128,11 +129,6 @@ export class TransformerComponent {
     this.transform(files);
   }
 
-  private preventDefault(dragEvent: DragEvent) {
-    dragEvent.preventDefault();
-    dragEvent.stopPropagation();
-  }
-
   go(files: FileList) {
     if (!files || !files.length) { return; }
 
@@ -141,6 +137,11 @@ export class TransformerComponent {
 
   arrayBuffer2File(arrayBuffer: ArrayBuffer, name: string) {
     return arrayBuffer ? new File([arrayBuffer], name, { type: `txt/xml` }) : null;
+  }
+
+  private preventDefault(dragEvent: DragEvent) {
+    dragEvent.preventDefault();
+    dragEvent.stopPropagation();
   }
 
   private transform(files: File[]) {
@@ -159,13 +160,15 @@ export class TransformerComponent {
               const outputType = configuration.outputType;
 
               const outputBlob = new Blob([tranformation.arrayBuffer], {
-                type: outputType === OutputType.PLMXML ? `txt/xml` : (outputType === OutputType.AJT ? `text/plain` : 'application/octet-stream')
+                type: outputType === OutputType.PLMXML ?
+                  `txt/xml` : (outputType === OutputType.AJT ? `text/plain` : 'application/octet-stream')
               });
               const outputBlobURL = URL.createObjectURL(outputBlob);
 
               const linkELement = document.createElement(`a`);
               linkELement.href = outputBlobURL;
-              linkELement.download = `${name}.${outputType === OutputType.PLMXML ? 'plmxml' : (outputType === OutputType.AJT ? 'ajt' : 'jt')}`;
+              linkELement.download = `${name}.${outputType === OutputType.PLMXML ?
+                'plmxml' : (outputType === OutputType.AJT ? 'ajt' : 'jt')}`;
               linkELement.click();
 
               linkELement.remove();

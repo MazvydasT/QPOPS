@@ -2,9 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": [],
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true
+    "types": []
   },
   "files": [
     "src/main.ts",
