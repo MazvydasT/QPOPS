@@ -14,7 +14,7 @@ export class AppComponent {
   version = {
     major: 1,
     minor: 11,
-    patch: 7
+    patch: 8
   };
   howToLinks = [
     { name: `Filtering`, link: `assets/videos/filtering.mp4` },

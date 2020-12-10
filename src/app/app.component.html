@@ -11,21 +11,24 @@
                 </ng-container>
             </div>
         </div>
-        
+
         <h2 id="version" class="mat-h2 noMargin">v{{version.major}}.{{version.minor}}.{{version.patch}}</h2>
 
-        <button *ngIf="swUpdate.available | async" class="spaceLeft" mat-raised-button color="accent" (click)="activateUpdate()">Update</button>
+        <button *ngIf="swUpdate.available | async" class="spaceLeft" mat-raised-button color="accent"
+            (click)="activateUpdate()">Update</button>
     </div>
 
     <router-outlet></router-outlet>
 </ng-container>
 
 <ng-template #browserLacksFeatures>
+    <div id="browserLacksFeaturesImage">
+
+    </div>
     <div id="browserLacksFeaturesNote">
-        <img src="assets/images/dead.png">
-        <h2>
-            <span>Dear user, current browser does not support features required by this app.</span>
-            <span>Please use one that's more up-to-date with the world ;)</span>
+        <h2 id="browserLacksFeaturesNoteHeader">
+            Dear user, current browser does not support features required by this app.<br/>
+            Please use one that's more up-to-date with the world ;)
         </h2>
     </div>
 </ng-template>

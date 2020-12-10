@@ -21,8 +21,7 @@
     flex-wrap: wrap;
 }
 
-.noMargin
- {
+.noMargin {
     margin-bottom: 0;
 }
 
@@ -44,23 +43,29 @@
     padding-left: 8px;
 }
 
+#browserLacksFeaturesImage {
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    top: 20%;
+    bottom: 40%;
+
+    background-image: url("/assets/images/dead.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: bottom;
+}
+
 #browserLacksFeaturesNote {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    left: 5%;
+    right: 5%;
+    top: 60%;
 
-    > img {
-        left: 50%;
-        position: relative;
-        transform: translateX(-50%);
-    }
+    text-align: center;
 
-    > h2 {
-        white-space: nowrap;
-
-        > span {
-            display: block;
-        }
+    #browserLacksFeaturesNoteHeader {
+        display: inline-block;
+        text-align: left;
     }
 }
