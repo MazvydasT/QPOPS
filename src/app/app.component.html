@@ -1,33 +1,34 @@
 <ng-container *ngIf="supportsRequiredFeatures; else browserLacksFeatures">
-    <div class="spaceAround header">
-        <div class="howToContainer">
-            <h2 class="spaceRight noMargin">How to:</h2>
-
+    <div class="spaceAround" id="header-container">
+        <div class="header centered-width">
             <div class="howToContainer">
-                <ng-container *ngFor="let link of howToLinks; let i = index">
-                    <h1 class="noMargin" *ngIf="i > 0">→</h1>
-                    <a mat-button color="primary" routerLink="."
-                        (click)="videoOverlayService.open(link.link)">{{link.name}}</a>
-                </ng-container>
+                <h2 class="spaceRight noMargin">How to:</h2>
+
+                <div class="howToContainer">
+                    <ng-container *ngFor="let link of howToLinks; let i = index">
+                        <h1 class="noMargin" *ngIf="i > 0">→</h1>
+                        <a mat-button color="primary" routerLink="."
+                            (click)="videoOverlayService.open(link.link)">{{link.name}}</a>
+                    </ng-container>
+                </div>
             </div>
+
+            <h2 id="version" class="mat-h2 noMargin">v{{version.major}}.{{version.minor}}.{{version.patch}}</h2>
+
+            <button *ngIf="swUpdate.available | async" class="spaceLeft" mat-raised-button color="accent"
+                (click)="activateUpdate()">Update</button>
         </div>
-
-        <h2 id="version" class="mat-h2 noMargin">v{{version.major}}.{{version.minor}}.{{version.patch}}</h2>
-
-        <button *ngIf="swUpdate.available | async" class="spaceLeft" mat-raised-button color="accent"
-            (click)="activateUpdate()">Update</button>
     </div>
 
     <router-outlet></router-outlet>
 </ng-container>
 
 <ng-template #browserLacksFeatures>
-    <div id="browserLacksFeaturesImage">
-
-    </div>
+    <div id="browserLacksFeaturesImage"></div>
+    
     <div id="browserLacksFeaturesNote">
         <h2 id="browserLacksFeaturesNoteHeader">
-            Dear user, current browser does not support features required by this app.<br/>
+            Dear user, current browser does not support features required by this app.<br />
             Please use one that's more up-to-date with the world ;)
         </h2>
     </div>

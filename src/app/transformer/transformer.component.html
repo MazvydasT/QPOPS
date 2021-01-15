@@ -1,40 +1,30 @@
-<div id="configuration" class="spaceAround">
-    <h2>Configuration:</h2>
-    <form id="configControls" #configForm (input)="onConfigurationChange()">
-        <!--<div class="padRight padBottom">
-            <label>Output format:</label>
-            <mat-radio-group class="displayFlex flexDirectionColumn" name="outputType"
-                [(ngModel)]="configuration.outputType">
-                <mat-radio-button class="margin-top-bottom margin-left" [value]="ouputTypes.JT">{{"JT"}}
-                </mat-radio-button>
-                <mat-radio-button class="margin-top-bottom margin-left" [value]="ouputTypes.PLMXML">{{"PLMXML"}}
-                </mat-radio-button>
-                <mat-radio-button class="margin-top-bottom margin-left" [value]="ouputTypes.AJT">{{"AJT"}}
-                </mat-radio-button>
-            </mat-radio-group>
-        </div>-->
-
-        <div class="padRight padBottom">
-            <label>I need:</label>
-            <div class="displayFlex flexDirectionColumn">
-                <mat-checkbox *ngFor="let selectedContentType of configuration.selectedContentTypes" class="margin-left"
-                    [name]="contentTypes[selectedContentType.contentType]" [(ngModel)]="selectedContentType.selected"
-                    [disabled]="selectedContentType.selected && countNumberOfSelectedContentTypes() <= 1">
-                    {{contentTypes[selectedContentType.contentType]}}
-                </mat-checkbox>
+<div class="flex-container spaceAround">
+    <div id="configuration" class="centered-width">
+        <h2>Configuration:</h2>
+        <form id="configControls" #configForm (input)="onConfigurationChange()">
+            <div class="padRight padBottom">
+                <label>I need:</label>
+                <div class="displayFlex flexDirectionColumn">
+                    <mat-checkbox *ngFor="let selectedContentType of configuration.selectedContentTypes"
+                        class="margin-left" [name]="contentTypes[selectedContentType.contentType]"
+                        [(ngModel)]="selectedContentType.selected"
+                        [disabled]="selectedContentType.selected && countNumberOfSelectedContentTypes() <= 1">
+                        {{contentTypes[selectedContentType.contentType]}}
+                    </mat-checkbox>
+                </div>
             </div>
-        </div>
 
-        <mat-slide-toggle class="alignSelfCenter padRight padBottom"
-            [(ngModel)]="configuration.includeBranchesWithoutCAD" name="includeBranchesWithoutCAD">
-            Include branches without CAD
-        </mat-slide-toggle>
+            <mat-slide-toggle class="alignSelfCenter padRight padBottom"
+                [(ngModel)]="configuration.includeBranchesWithoutCAD" name="includeBranchesWithoutCAD">
+                Include branches without CAD
+            </mat-slide-toggle>
 
-        <mat-form-field class="alignSelfCenter" id="sysRootInput">
-            <mat-label>Path to <span class="italic">sys_root</span></mat-label>
-            <input matInput [(ngModel)]="configuration.sysRootPath" name="sysRootPath" required autocomplete="off">
-        </mat-form-field>
-    </form>
+            <mat-form-field class="alignSelfCenter" id="sysRootInput">
+                <mat-label>Path to <span class="italic">sys_root</span></mat-label>
+                <input matInput [(ngModel)]="configuration.sysRootPath" name="sysRootPath" required autocomplete="off">
+            </mat-form-field>
+        </form>
+    </div>
 </div>
 
 <div class="drop-zone" [ngClass]="{'accept-drop': acceptDrop, 'reject-drop': acceptDrop === false}" id="container"
@@ -45,14 +35,15 @@
         <input #input type="file" (change)="go($event.target.files); form.reset()" multiple accept=".xml" />
     </form>
 
-    <button [disabled]="configForm.invalid" id="addButton" mat-raised-button color="primary" (click)="input.click()">
+    <button [disabled]="configForm.invalid" class="centered-width" id="addButton" mat-raised-button color="primary"
+        (click)="input.click()">
         <h1>Click or drag & drop</h1>
     </button>
 
-    <div id="transformationItemsViewContainer">
+    <div id="transformationItemsViewContainer" class="centered-width">
         <div class="spaceAround">
             <ng-container *ngFor="let transformationItem of transformationItems">
-                <mat-card *ngIf="(transformationItem.transformation | async) || {} as transformation">
+                <mat-card class="" *ngIf="(transformationItem.transformation | async) || {} as transformation">
                     <mat-card-header>
                         <mat-card-title>{{transformationItem.name}} → {{ouputTypes[transformationItem.outputType]}}
                         </mat-card-title>

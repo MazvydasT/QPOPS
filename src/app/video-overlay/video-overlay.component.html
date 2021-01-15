@@ -2,6 +2,6 @@
     <mat-spinner></mat-spinner>
 </div>
 
-<video (canplay)="loading = false" [style.opacity]="loading ? 0 : 1" controls preload="auto" autoplay muted loop>
+<video class="global-width" (canplay)="loading = false" [style.opacity]="loading ? 0 : 1" controls preload="auto" autoplay muted loop>
     <source [src]="videoSource" type="video/mp4">
 </video>

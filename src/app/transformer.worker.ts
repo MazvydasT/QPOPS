@@ -212,7 +212,13 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
 
     item.attributes.set(`Owner CDSID`, dataObject?.Comment2 ?? ``);
 
-    item.attributes.set(`Active In Current Version`, dataObject?.ActiveInCurrentVersion ?? ``);
+    item.attributes.set(`ActiveInCurrentVersion`, dataObject?.ActiveInCurrentVersion ?? ``);
+
+    if (data.additionalAttributes) {
+      for (const [key, value] of data.additionalAttributes) {
+        item.attributes.set(key, value);
+      }
+    }
 
     item.dataObject = null;
   }

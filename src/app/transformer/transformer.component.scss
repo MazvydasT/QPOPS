@@ -31,6 +31,11 @@
     margin-top: 8px;
 }
 
+.flex-container {
+    display: flex;
+    flex-flow: column;
+}
+
 #configuration {
     display: flex;
     flex-flow: column;
@@ -51,7 +56,7 @@
 
     height: 100%;
 
-    overflow: auto;
+    overflow: hidden;
 
     display: flex;
     flex-flow: column;

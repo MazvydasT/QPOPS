@@ -3,7 +3,9 @@
 html,
 body {
     height: 100%;
+    overflow: hidden;
 }
+
 body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
@@ -17,4 +19,15 @@ body {
 
 .colour-warn {
     color: mat-color($custom-theme-warn) !important;
+}
+
+.global-width {
+    width: 100%;
+    max-width: 1170px;
+}
+
+.centered-width {
+    @extend .global-width;
+    align-self: center;
+    box-sizing: border-box !important;
 }

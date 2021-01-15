@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { SwUpdate } from '@angular/service-worker';
 import { BrowserFeatureDetectionService } from './browser-feature-detection.service';
 import { RedirectService } from './redirect.service';
+import { VersionService } from './version.service';
 import { VideoOverlayService } from './video-overlay/video-overlay.service';
 
 
@@ -11,11 +12,8 @@ import { VideoOverlayService } from './video-overlay/video-overlay.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  version = {
-    major: 1,
-    minor: 12,
-    patch: 0
-  };
+  version = this.versionService.getVersion();
+
   howToLinks = [
     { name: `Filtering`, link: `assets/videos/filtering.mp4` },
     { name: `Exporting`, link: `assets/videos/exporting.mp4` },
@@ -28,7 +26,8 @@ export class AppComponent {
     public videoOverlayService: VideoOverlayService,
     private browserFeatureDetectionService: BrowserFeatureDetectionService,
     private redirectService: RedirectService,
-    public swUpdate: SwUpdate
+    public swUpdate: SwUpdate,
+    public versionService: VersionService
   ) {
 
     this.redirectService.redirectToLoginIfNeeded();

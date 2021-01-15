@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { IInput } from './input';
 import { ITransformationConfiguration } from './transformation-configuration';
 import { ITransformation } from './transformation';
+import { VersionService } from './version.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class TransformerService {
 
   private readonly queue = new Array<() => void>();
 
-  constructor() { }
+  constructor(private versionService: VersionService) { }
 
   enqueueTransform(file: File, options?: ITransformationConfiguration) {
     return new Observable<ITransformation>(subscriber => {
@@ -60,16 +61,20 @@ export class TransformerService {
           this.processQueue();
         };
 
+        const version = this.versionService.getVersion();
+
         const input: IInput = {
           arrayBuffer,
-          configuration: options
+          configuration: options,
+          additionalAttributes: new Map([
+            [`QPOPS`, `v${version.major}.${version.minor}.${version.patch}`]
+          ])
         };
 
         worker.postMessage(input, [arrayBuffer]);
       };
 
       this.queue.push(() => file.arrayBuffer().then(processArrayBuffer));
-      // file.arrayBuffer().then(processArrayBuffer);
 
       this.processQueue();
 
