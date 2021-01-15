@@ -8,6 +8,6 @@ export class BrowserFeatureDetectionService {
   constructor() { }
 
   supportsRequiredFeatures() {
-    return !!Blob.prototype.arrayBuffer && !!Object.entries;
+    return Blob.prototype.arrayBuffer && Object.entries && Worker;
   }
 }
