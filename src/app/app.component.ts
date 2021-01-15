@@ -13,8 +13,8 @@ import { VideoOverlayService } from './video-overlay/video-overlay.service';
 export class AppComponent {
   version = {
     major: 1,
-    minor: 11,
-    patch: 8
+    minor: 12,
+    patch: 0
   };
   howToLinks = [
     { name: `Filtering`, link: `assets/videos/filtering.mp4` },

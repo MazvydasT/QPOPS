@@ -40,6 +40,8 @@ export interface IDataObject {
   TCe_Revision?: string;
 
   Comment2?: string;
+
+  ActiveInCurrentVersion?: string;
 }
 
 export interface IItem {

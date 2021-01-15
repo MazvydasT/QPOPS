@@ -172,8 +172,6 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
           supportingDataObjects.get(prototypeObject.threeDRep)?.file
         )?.fileName);
 
-        item.attributes.set(`3D file`, item.filePath ?? `null`);
-
         if (prototypeObject?.TCe_Revision) {
           tceRevision = prototypeObject.TCe_Revision;
         }
@@ -198,25 +196,23 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
       }
     }
 
+    item.attributes.set(`3D file`, item.filePath ?? ``);
+
     const status = dataObject?.NodeInfo?.status;
 
-    if (status) {
-      item.attributes.set(`Created by`, status.createdBy ?? `null`);
-      item.attributes.set(`Last modified by`, status.lastModifiedBy ?? `null`);
-      item.attributes.set(`Date`, status.modificationDate ?? `null`);
-    }
+    item.attributes.set(`Created by`, status?.createdBy ?? ``);
+    item.attributes.set(`Last modified by`, status?.lastModifiedBy ?? ``);
+    item.attributes.set(`Date`, status?.modificationDate ?? ``);
 
     if (!tceRevision && dataObject?.TCe_Revision) {
       tceRevision = dataObject.TCe_Revision;
     }
 
-    if (tceRevision) {
-      item.attributes.set(`TCe_Revision`, tceRevision);
-    }
+    item.attributes.set(`TCe_Revision`, tceRevision ?? ``);
 
-    if (dataObject?.Comment2) {
-      item.attributes.set(`Owner CDSID`, dataObject.Comment2);
-    }
+    item.attributes.set(`Owner CDSID`, dataObject?.Comment2 ?? ``);
+
+    item.attributes.set(`Active In Current Version`, dataObject?.ActiveInCurrentVersion ?? ``);
 
     item.dataObject = null;
   }
