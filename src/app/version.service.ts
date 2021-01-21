@@ -9,7 +9,7 @@ export class VersionService {
 
   getVersion = () => ({
     major: 1,
-    minor: 13,
-    patch: 1
+    minor: 14,
+    patch: 0
   });
 }
