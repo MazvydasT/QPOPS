@@ -161,6 +161,7 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
 
 
     let tceRevision: string = null;
+    let activeInCurrentVersion: string = null;
 
     const prototype = dataObject.prototype;
     if (prototype) {
@@ -175,6 +176,10 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
 
         if (prototypeObject?.TCe_Revision) {
           tceRevision = prototypeObject.TCe_Revision;
+        }
+
+        if (prototypeObject?.ActiveInCurrentVersion) {
+          activeInCurrentVersion = `${prototypeObject?.ActiveInCurrentVersion} (prototype)`;
         }
       }
 
@@ -213,7 +218,7 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
 
     item.attributes.set(`Owner CDSID`, dataObject?.Comment2 ?? ``);
 
-    item.attributes.set(`ActiveInCurrentVersion`, dataObject?.ActiveInCurrentVersion ?? ``);
+    item.attributes.set(`ActiveInCurrentVersion`, dataObject?.ActiveInCurrentVersion ?? activeInCurrentVersion ?? ``);
 
     if (data.additionalAttributes) {
       for (const [key, value] of data.additionalAttributes) {
