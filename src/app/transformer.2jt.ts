@@ -4,7 +4,7 @@ import { IItem } from './item';
 
 importScripts(
     './assets/JSJT/pako.js',
-    './assets/JSJT/JSJT.min.js'
+    './assets/JSJT/JSJT.js'
 );
 
 const convert: (items: IItem[]) => number[] = (self as any).JSJT.Items2JT.Convert;

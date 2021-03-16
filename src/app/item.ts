@@ -57,6 +57,8 @@ export interface IItem {
 
   filePath: string;
 
+  fileIsPart: boolean;
+
   dataObject: IDataObject;
 
   parent: IItem;

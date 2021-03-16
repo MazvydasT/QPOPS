@@ -121,6 +121,7 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
           title: getTitle(dataObject.number, dataObject.name),
           children: null,
           filePath: null,
+          fileIsPart: isProduct,
           parent: null,
           transformationMatrix: null,
           attributes: new Map(),
