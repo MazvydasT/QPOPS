@@ -1,0 +1,21 @@
+.spinner-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+}
+
+iframe {
+    width: 100vw;
+    height: 80vh;
+
+    border: 0;
+}
+
+.back {
+    position: absolute;
+
+    left: 20px;
+    top: 20px;
+}

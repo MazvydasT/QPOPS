@@ -1,36 +1,30 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { SwUpdate } from '@angular/service-worker';
 import { BrowserFeatureDetectionService } from './browser-feature-detection.service';
-import { RedirectService } from './redirect.service';
+import { ConnectionService } from './connection.service';
 import { VersionService } from './version.service';
-import { VideoOverlayService } from './video-overlay/video-overlay.service';
-
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
   version = this.versionService.getVersion();
 
-  howToLinks = [
-    { name: `Filtering`, link: `assets/videos/filtering.mp4` },
-    { name: `Exporting`, link: `assets/videos/exporting.mp4` },
-    { name: `Converting`, link: `assets/videos/converting.mp4` }
-  ];
+  connectionStatus$ = this.connectionService.getConnectionStatus();
 
   supportsRequiredFeatures = this.browserFeatureDetectionService.supportsRequiredFeatures();
 
   constructor(
-    public videoOverlayService: VideoOverlayService,
     private browserFeatureDetectionService: BrowserFeatureDetectionService,
-    private redirectService: RedirectService,
+    public connectionService: ConnectionService,
     public swUpdate: SwUpdate,
     public versionService: VersionService
   ) {
 
-    this.redirectService.redirectToLoginIfNeeded();
+    //this.redirectService.redirectToLoginIfNeeded();
 
     const preventDefault = (dragEvent: DragEvent) => {
       dragEvent.preventDefault();

@@ -14,24 +14,25 @@
     display: flex;
     flex-flow: row;
     flex-wrap: wrap-reverse;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: flex-end;
 
     width: 100%;
     padding-top: 8px;
+    padding-bottom: 8px;
+    min-height: 56px;
     box-sizing: border-box;
-}
-
-.howToContainer {
-    display: flex;
-    flex-wrap: wrap;
 }
 
 .noMargin {
     margin-bottom: 0;
 }
 
-#version {
+.text-align-right {
     text-align: right;
+}
+
+.strech {
     flex: 1 1 auto;
 }
 
@@ -72,5 +73,22 @@
     #browserLacksFeaturesNoteHeader {
         display: inline-block;
         text-align: left;
+    }
+}
+
+.iconContainer {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    > .doneIcon {
+        width: 25vw;
+        height: 25vw;
+        line-height: 25vw;
+        text-align: center;
+        font-size: 25vw;
     }
 }

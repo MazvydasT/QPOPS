@@ -17,6 +17,7 @@ export interface IContentTypeSelection {
 
 export interface ITransformationConfiguration {
     includeBranchesWithoutCAD?: boolean;
+    resourceSysRootJTFilesAreAssemblies?: boolean;
     outputType: OutputType;
     sysRootPath: string;
     ajt2jtConverterPath?: string;

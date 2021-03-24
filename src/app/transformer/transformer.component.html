@@ -1,28 +1,63 @@
 <div class="flex-container spaceAround">
     <div id="configuration" class="centered-width">
-        <h2>Configuration:</h2>
-        <form id="configControls" #configForm (input)="onConfigurationChange()">
-            <div class="padRight padBottom">
-                <label>I need:</label>
-                <div class="displayFlex flexDirectionColumn">
-                    <mat-checkbox *ngFor="let selectedContentType of configuration.selectedContentTypes"
-                        class="margin-left" [name]="contentTypes[selectedContentType.contentType]"
-                        [(ngModel)]="selectedContentType.selected"
-                        [disabled]="selectedContentType.selected && countNumberOfSelectedContentTypes() <= 1">
-                        {{contentTypes[selectedContentType.contentType]}}
-                    </mat-checkbox>
-                </div>
-            </div>
+        <form #configForm (input)="onConfigurationChange()">
+            <mat-accordion multi>
+                <mat-expansion-panel>
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>
+                            How to
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
 
-            <mat-slide-toggle class="alignSelfCenter padRight padBottom"
-                [(ngModel)]="configuration.includeBranchesWithoutCAD" name="includeBranchesWithoutCAD">
-                Include branches without CAD
-            </mat-slide-toggle>
+                    <app-how-to></app-how-to>
+                </mat-expansion-panel>
 
-            <mat-form-field class="alignSelfCenter" id="sysRootInput">
-                <mat-label>Path to <span class="italic">sys_root</span></mat-label>
-                <input matInput [(ngModel)]="configuration.sysRootPath" name="sysRootPath" required autocomplete="off">
-            </mat-form-field>
+                <mat-expansion-panel>
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>
+                            Advanced settings
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+
+                    <div class="advancedControls">
+                        <mat-form-field id="sysRootInput">
+                            <mat-label>Path to <span class="italic">sys_root</span></mat-label>
+                            <input matInput [(ngModel)]="configuration.sysRootPath" name="sysRootPath" required
+                                autocomplete="off">
+                        </mat-form-field>
+
+                        <mat-slide-toggle [(ngModel)]="configuration.resourceSysRootJTFilesAreAssemblies"
+                            name="resourceSysRootJTFilesAreAssemblies">
+                            Resource JT files under <i>sys_root</i> are assemblies, not under <i>sys_root</i> - parts
+                        </mat-slide-toggle>
+                    </div>
+                </mat-expansion-panel>
+
+                <mat-expansion-panel expanded>
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>Configuration</mat-panel-title>
+                    </mat-expansion-panel-header>
+
+                    <div class="configControls">
+                        <div class="padRight">
+                            <label>I need:</label>
+                            <div class="displayFlex flexDirectionColumn">
+                                <mat-checkbox *ngFor="let selectedContentType of configuration.selectedContentTypes"
+                                    class="margin-left" [name]="contentTypes[selectedContentType.contentType]"
+                                    [(ngModel)]="selectedContentType.selected"
+                                    [disabled]="selectedContentType.selected && countNumberOfSelectedContentTypes() <= 1">
+                                    {{contentTypes[selectedContentType.contentType]}}
+                                </mat-checkbox>
+                            </div>
+                        </div>
+
+                        <mat-slide-toggle class="alignSelfCenter" [(ngModel)]="configuration.includeBranchesWithoutCAD"
+                            name="includeBranchesWithoutCAD">
+                            Include branches without CAD
+                        </mat-slide-toggle>
+                    </div>
+                </mat-expansion-panel>
+            </mat-accordion>
         </form>
     </div>
 </div>
@@ -31,7 +66,7 @@
     (dragenter)="dragEnterOver($event, configForm.invalid)" (dragleave)="dragLeave($event)"
     (dragover)="dragEnterOver($event, configForm.invalid)" (drop)="drop($event)">
 
-    <form #form>
+    <form id="inputForm" #form>
         <input #input type="file" (change)="go($event.target.files); form.reset()" multiple accept=".xml" />
     </form>
 
@@ -45,8 +80,7 @@
             <ng-container *ngFor="let transformationItem of transformationItems">
                 <mat-card class="" *ngIf="(transformationItem.transformation | async) || {} as transformation">
                     <mat-card-header>
-                        <mat-card-title>{{transformationItem.name}} → {{ouputTypes[transformationItem.outputType]}}
-                        </mat-card-title>
+                        <mat-card-title>{{transformationItem.name}}</mat-card-title>
                     </mat-card-header>
 
                     <mat-card-content>

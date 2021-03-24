@@ -1,17 +1,17 @@
 import { Injectable, Injector } from '@angular/core';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal, PortalInjector } from '@angular/cdk/portal';
-import { VideoOverlayComponent } from './video-overlay.component';
+import { IOverlayContent, OverlayComponent } from './overlay.component';
 import { take } from 'rxjs/operators';
-import { VIDEO_OVERLAY_DATA } from './video-overlay.tokens';
+import { OVERLAY_DATA as OVERLAY_DATA } from './overlay.tokens';
 
 @Injectable({
   providedIn: 'root'
 })
-export class VideoOverlayService {
+export class OverlayService {
   constructor(private overlay: Overlay, private injector: Injector) { }
 
-  open(videoSource: string) {
+  open(content: IOverlayContent) {
     const overlayRef = this.overlay.create({
       disposeOnNavigation: true,
       scrollStrategy: this.overlay.scrollStrategies.block(),
@@ -20,7 +20,7 @@ export class VideoOverlayService {
       backdropClass: [`dark-backdrop`, `mat-app-background`]
     });
 
-    const portal = new ComponentPortal(VideoOverlayComponent, null, this.createInjector(videoSource, overlayRef));
+    const portal = new ComponentPortal(OverlayComponent, null, this.createInjector(content, overlayRef));
 
     overlayRef.attach(portal);
 
@@ -29,10 +29,11 @@ export class VideoOverlayService {
     return overlayRef;
   }
 
-  private createInjector(videoSource: string, overlayRef: OverlayRef) {
+  private createInjector(content: IOverlayContent, overlayRef: OverlayRef) {
     const injectorTokens = new WeakMap();
     injectorTokens.set(OverlayRef, overlayRef);
-    injectorTokens.set(VIDEO_OVERLAY_DATA, videoSource);
+    injectorTokens.set(OVERLAY_DATA, content);
+
     return new PortalInjector(this.injector, injectorTokens);
   }
 }

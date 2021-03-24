@@ -1,31 +1,63 @@
-<ng-container *ngIf="supportsRequiredFeatures; else browserLacksFeatures">
+<ng-container *ngIf="supportsRequiredFeatures else browserLacksFeatures">
+    <!--<ng-container *ngIf="connectionService.isTopWindow() else logInConfirmation">-->
     <div class="spaceAround" id="header-container">
         <div class="header centered-width">
-            <div class="howToContainer">
-                <h2 class="spaceRight noMargin">How to:</h2>
+            <ng-container *ngIf="connectionStatus$ | async as connectionStatus; else waiting">
+                <ng-container *ngIf="connectionStatus !== connectionService.ConnectionStatus.NoNetwork">
+                    <button *ngIf="swUpdate.available | async else upToDate" mat-icon-button color="accent"
+                        (click)="activateUpdate()">
+                        <mat-icon>system_update_alt</mat-icon>
+                    </button>
 
-                <div class="howToContainer">
-                    <ng-container *ngFor="let link of howToLinks; let i = index">
-                        <h1 class="noMargin" *ngIf="i > 0">→</h1>
-                        <a mat-button color="primary" routerLink="."
-                            (click)="videoOverlayService.open(link.link)">{{link.name}}</a>
-                    </ng-container>
-                </div>
-            </div>
+                    <ng-template #upToDate>
+                        <mat-icon class="spaceAround"
+                            *ngIf="connectionStatus === connectionService.ConnectionStatus.LoggedIn" title="Up to date">
+                            check_circle_outline
+                        </mat-icon>
+                    </ng-template>
 
-            <h2 id="version" class="mat-h2 noMargin">v{{version.major}}.{{version.minor}}.{{version.patch}}</h2>
+                    <button class="spaceLeft"
+                        *ngIf="connectionStatus === connectionService.ConnectionStatus.NotLoggedIn" mat-icon-button
+                        color="warn" title="Click to log in" (click)="connectionService.logIn()">
+                        <mat-icon>account_circle</mat-icon>
+                    </button>
 
-            <button *ngIf="swUpdate.available | async" class="spaceLeft" mat-raised-button color="accent"
-                (click)="activateUpdate()">Update</button>
+                    <mat-icon class="spaceAround"
+                        *ngIf="connectionStatus === connectionService.ConnectionStatus.LoggedIn" title="Logged in">
+                        account_circle
+                    </mat-icon>
+                </ng-container>
+
+                <mat-icon class="spaceAround"
+                    [title]="connectionStatus === connectionService.ConnectionStatus.NoNetwork ? 'Offline' : 'Online'">
+                    {{connectionStatus === connectionService.ConnectionStatus.NoNetwork ?
+                    'wifi_off' : 'wifi_on' }}
+                </mat-icon>
+            </ng-container>
+
+            <h2 class="mat-h2 noMargin spaceLeft">
+                v{{version.major}}.{{version.minor}}.{{version.patch}}
+            </h2>
         </div>
     </div>
 
     <router-outlet></router-outlet>
+    <!--</ng-container>-->
 </ng-container>
+
+<!--<ng-template #logInConfirmation>
+    <div class="iconContainer">
+        <mat-icon class="doneIcon" color="accent">done</mat-icon>
+    </div>
+</ng-template>-->
+
+<ng-template #waiting>
+    <mat-icon title="Waiting for connection" class="spaceAround">access_time</mat-icon>
+</ng-template>
 
 <ng-template #browserLacksFeatures>
     <div id="browserLacksFeaturesImage"></div>
-    
+
     <div id="browserLacksFeaturesNote">
         <h2 id="browserLacksFeaturesNoteHeader">
             Dear user, current browser does not support features required by this app.<br />

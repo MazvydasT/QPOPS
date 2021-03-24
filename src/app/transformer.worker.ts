@@ -174,6 +174,12 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
           supportingDataObjects.get(prototypeObject.threeDRep)?.file
         )?.fileName);
 
+        if (item.type === ContentType.Resource &&
+          data.configuration.resourceSysRootJTFilesAreAssemblies &&
+          !item.filePath.startsWith(data.configuration.sysRootPath)) {
+            item.fileIsPart = true;
+        }
+
         if (prototypeObject?.TCe_Revision) {
           tceRevision = prototypeObject.TCe_Revision;
         }

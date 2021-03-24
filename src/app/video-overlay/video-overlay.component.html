@@ -1,7 +1,0 @@
-<div class="spinner-wrapper" *ngIf="loading">
-    <mat-spinner></mat-spinner>
-</div>
-
-<video class="global-width" (canplay)="loading = false" [style.opacity]="loading ? 0 : 1" controls preload="auto" autoplay muted loop>
-    <source [src]="videoSource" type="video/mp4">
-</video>

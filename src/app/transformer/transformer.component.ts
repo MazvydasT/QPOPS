@@ -33,9 +33,10 @@ export class TransformerComponent {
 
   configuration: ITransformationConfiguration = {
     includeBranchesWithoutCAD: false,
+    resourceSysRootJTFilesAreAssemblies: true,
     outputType: OutputType.JT,
     sysRootPath: `\\\\gal71836\\hq\\Manufacturing\\AME\\VME\\sys_root`,
-    ajt2jtConverterPath: `C:\\Program Files\\Siemens\\JtUtilities\\12_4\\bin64\\asciitojt.exe`,
+    //ajt2jtConverterPath: `C:\\Program Files\\Siemens\\JtUtilities\\12_4\\bin64\\asciitojt.exe`,
     selectedContentTypes: Array.from(Object.values(ContentType))
       .filter(v => typeof v === `number`)
       .map((v): IContentTypeSelection => ({ contentType: (v as ContentType), selected: v === ContentType.Product }))
