@@ -1,13 +1,14 @@
+@use '~@angular/material' as mat;
 @mixin drop-zone-theme($theme) {
     $accent: map-get($theme, accent);
     $warn: map-get($theme, warn);
 
     .accept-drop {
-        background-color: mat-color($accent);
+        background-color: mat.get-color-from-palette($accent);
     }
 
     .reject-drop {
-        background-color: mat-color($warn);
+        background-color: mat.get-color-from-palette($warn);
     }
 }
 

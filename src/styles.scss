@@ -1,3 +1,4 @@
+@use '~@angular/material' as mat;
 @import "./custom-theme.scss";
 
 html,
@@ -18,7 +19,7 @@ body {
 }
 
 .colour-warn {
-    color: mat-color($custom-theme-warn) !important;
+    color: mat.get-color-from-palette($custom-theme-warn) !important;
 }
 
 .global-width {
