@@ -30,7 +30,7 @@
     "@types/he": "^1.1.1",
     "@types/lodash-es": "^4.17.3",
     "core-js": "^3.8.1",
-    "fast-xml-parser": "^3.17.3",
+    "fast-xml-parser": "^3.19.0",
     "he": "^1.2.0",
     "lodash-es": "^4.17.15",
     "moment": "^2.27.0",
