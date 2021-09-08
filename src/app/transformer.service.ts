@@ -19,7 +19,7 @@ export class TransformerService {
 
   constructor(private versionService: VersionService) { }
 
-  enqueueTransform(file: File, options?: ITransformationConfiguration) {
+  enqueueTransform(file: File, inputFileName: string, options?: ITransformationConfiguration) {
     return new Observable<ITransformation>(subscriber => {
       if (typeof Worker === 'undefined') {
         subscriber.error(new Error(`Web wrokers are not supported in this browser.`));
@@ -68,7 +68,8 @@ export class TransformerService {
           configuration: options,
           additionalAttributes: new Map([
             [`QPOPS`, `v${version.major}.${version.minor}.${version.patch}`]
-          ])
+          ]),
+          inputFileName: inputFileName
         };
 
         worker.postMessage(input, [arrayBuffer]);

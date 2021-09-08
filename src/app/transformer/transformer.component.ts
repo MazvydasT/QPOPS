@@ -154,7 +154,7 @@ export class TransformerComponent {
 
         const configuration = cloneDeep(this.configuration);
 
-        const transformation = this.transformService.enqueueTransform(file, configuration).pipe(
+        const transformation = this.transformService.enqueueTransform(file, name, configuration).pipe(
           catchError((err: Error) => of({ completionValue: 1, progressValue: 1, errorMessage: err.message } as ITransformation)),
           tap(tranformation => {
             if (tranformation.arrayBuffer) {

@@ -4,4 +4,5 @@ export interface IInput {
     arrayBuffer: ArrayBuffer;
     configuration: ITransformationConfiguration;
     additionalAttributes?: Map<string, string>;
+    inputFileName: string;
 }

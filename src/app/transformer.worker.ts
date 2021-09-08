@@ -177,7 +177,7 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
         if (item.type === ContentType.Resource &&
           data.configuration.resourceSysRootJTFilesAreAssemblies &&
           !item.filePath.startsWith(data.configuration.sysRootPath)) {
-            item.fileIsPart = true;
+          item.fileIsPart = true;
         }
 
         if (prototypeObject?.TCe_Revision) {
@@ -276,11 +276,30 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
 
   const outputType = data.configuration.outputType;
 
+  const root: IItem = {
+    title: data.inputFileName,
+    attributes: null,
+    children: [],
+    dataObject: null,
+    fileIsPart: null,
+    filePath: null,
+    parent: null,
+    transformationMatrix: null,
+    type: null
+  };
+
   for (const item of items.values()) {
-    if (!item.parent && item.type === ContentType.Resource) {
-      item.title = `Resource: ${item.title}`;
+    if (!item.parent) {
+      if (item.type === ContentType.Resource) {
+        item.title = `Resource: ${item.title}`;
+      }
+      
+      root.children.push(item);
+      item.parent = root;
     }
   }
+
+  items.set(`${Date.now}-root`, root);
 
   const outputArrayBuffer = outputType === OutputType.JT ? items2JT(items) :
     (outputType === OutputType.PLMXML ? items2XML(items) : items2AJT(items));
