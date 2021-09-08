@@ -31,7 +31,7 @@ export class TransformerService {
       const terminateWorker = () => worker?.terminate();
 
       const processArrayBuffer = (arrayBuffer: ArrayBuffer) => {
-        worker = new Worker('./transformer.worker', { type: 'module' });
+        worker = new Worker(new URL('./transformer.worker', import.meta.url), { type: 'module' });
 
         worker.onmessage = ({ data }: { data: ITransformation }) => {
 
