@@ -176,7 +176,7 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
 
         if (item.type === ContentType.Resource &&
           data.configuration.resourceSysRootJTFilesAreAssemblies &&
-          !item.filePath.startsWith(data.configuration.sysRootPath)) {
+          !item.filePath?.startsWith(data.configuration.sysRootPath)) {
           item.fileIsPart = true;
         }
 
