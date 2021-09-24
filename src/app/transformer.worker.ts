@@ -16,6 +16,17 @@ import { OutputType, ContentType } from './transformation-configuration';
 import { getFullFilePath } from './utils';
 
 addEventListener(`message`, async ({ data }: { data: IInput }) => {
+  try {
+    transform(data);
+  }
+
+  catch (error) {
+    handleError((error as Error).message);
+    return;
+  }
+});
+
+const transform = (data: IInput) => {
   const COMPLETION_VALUE = 6;
 
   postMessage({ completionValue: COMPLETION_VALUE, progressValue: 0 } as ITransformation);
@@ -293,7 +304,7 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
       if (item.type === ContentType.Resource) {
         item.title = `Resource: ${item.title}`;
       }
-      
+
       root.children.push(item);
       item.parent = root;
     }
@@ -309,7 +320,7 @@ addEventListener(`message`, async ({ data }: { data: IInput }) => {
     progressValue: 6,
     arrayBuffer: outputArrayBuffer
   } as ITransformation, [outputArrayBuffer]);
-});
+};
 
 const deleteEmptyItem = (id: string, item: IItem, items: Map<string, IItem>) => {
   if (item.filePath || (item.children && item.children.length)) { return; }
