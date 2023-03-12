@@ -1,10 +1,10 @@
 /// <reference lib="webworker" />
 
-import { Euler, Matrix4 } from 'three/build/three.module.js';
-
 import { parse, X2jOptions } from 'fast-xml-parser';
 import { decode } from 'he';
-
+import { from, toArray } from 'ix/iterable';
+import { filter, map } from 'ix/iterable/operators';
+import { Euler, Matrix4 } from 'three/build/three.module.js';
 import { IInput } from './input';
 import { IDataObject, IItem } from './item';
 import { ITransformation } from './transformation';
@@ -12,8 +12,11 @@ import { ContentType, OutputType } from './transformation-configuration';
 import { items2AJT } from './transformer.2ajt';
 import { items2JT } from './transformer.2jt';
 import { items2XML } from './transformer.2xml';
-
 import { getFullFilePath } from './utils';
+
+
+
+
 
 addEventListener(`message`, async ({ data }: { data: IInput }) => {
   try {
@@ -451,12 +454,36 @@ const transform = async (data: IInput) => {
 
   items.set(`${Date.now}-root`, root);
 
-  const outputArrayBuffer =
-    outputType === OutputType.JT
-      ? items2JT(items)
-      : outputType === OutputType.PLMXML
-      ? items2XML(items)
-      : items2AJT(items);
+  let outputArrayBuffer: ArrayBufferLike;
+
+  if(data.isInCefSharp)
+  {
+    postMessage(
+      {
+        completionValue: COMPLETION_VALUE,
+        progressValue: 5,
+        items: toArray(from(items.values()).pipe(
+          map(item => {
+            item.attributes = Array.from(item.attributes.entries()) as any as Map<string, any>;
+            return item;
+          }),
+          filter(item => item.parent == null)
+        ))
+      } as ITransformation
+    );
+
+    return;
+  }
+
+  else
+  {
+    outputArrayBuffer =
+      outputType === OutputType.JT
+        ? items2JT(items)
+        : outputType === OutputType.PLMXML
+        ? items2XML(items)
+        : items2AJT(items);
+  }
 
   postMessage(
     {

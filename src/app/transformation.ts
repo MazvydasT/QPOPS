@@ -1,3 +1,5 @@
+import { IItem } from './item';
+
 export interface ITransformation {
     progressValue: number;
     completionValue: number;
@@ -5,4 +7,6 @@ export interface ITransformation {
     arrayBuffer?: ArrayBuffer;
 
     errorMessage?: string;
+
+    items?: IItem[];
 }

@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
+import { CefSharpService } from './cef-sharp.service';
 
 import { IInput } from './input';
-import { ITransformationConfiguration } from './transformation-configuration';
 import { ITransformation } from './transformation';
+import { ITransformationConfiguration } from './transformation-configuration';
 import { VersionService } from './version.service';
 
 @Injectable({
@@ -17,7 +18,7 @@ export class TransformerService {
 
   private readonly queue = new Array<() => void>();
 
-  constructor(private versionService: VersionService) { }
+  constructor(private versionService: VersionService, private cefSharpService: CefSharpService) { }
 
   enqueueTransform(file: File, inputFileName: string, options?: ITransformationConfiguration) {
     return new Observable<ITransformation>(subscriber => {
@@ -33,11 +34,19 @@ export class TransformerService {
       const processArrayBuffer = (arrayBuffer: ArrayBuffer) => {
         worker = new Worker(new URL('./transformer.worker', import.meta.url), { type: 'module' });
 
-        worker.onmessage = ({ data }: { data: ITransformation }) => {
+        worker.onmessage = async ({ data }: { data: ITransformation }) => {
 
           if (data.errorMessage) {
             subscriber.error(new Error(data.errorMessage));
             return;
+          }
+
+          if(!!data.items) {
+            debugger;
+            const retValuePromise = this.cefSharpService.convert(data.items);
+            data.items = undefined;
+            const retValue = await retValuePromise;
+            debugger;
           }
 
           subscriber.next(data);
@@ -69,7 +78,8 @@ export class TransformerService {
           additionalAttributes: new Map([
             [`QPOPS`, `v${version.major}.${version.minor}.${version.patch}`]
           ]),
-          inputFileName: inputFileName
+          inputFileName,
+          isInCefSharp: this.cefSharpService.isInCefSharp()
         };
 
         worker.postMessage(input, [arrayBuffer]);

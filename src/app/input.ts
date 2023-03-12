@@ -5,4 +5,5 @@ export interface IInput {
     configuration: ITransformationConfiguration;
     additionalAttributes?: Map<string, string>;
     inputFileName: string;
+    isInCefSharp: boolean;
 }
