@@ -2,6 +2,6 @@
     <ng-container *ngFor="let link of howToLinks; let i = index">
         <h1 class="noMargin" *ngIf="i > 0">→</h1>
         <a mat-button color="primary" routerLink="."
-            (click)="overlayService.open({ overlayContentType: OverlayContentType.Video, link: link.link })">{{link.name}}</a>
+            (click)="overlayService.open({ overlayContentType: OverlayContentType.Video, link: link.link, mimeType: link.mimeType })">{{link.name}}</a>
     </ng-container>
 </div>

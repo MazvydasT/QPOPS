@@ -41,12 +41,13 @@ export class TransformerService {
             return;
           }
 
-          if(!!data.items) {
-            debugger;
-            const retValuePromise = this.cefSharpService.convert(data.items);
-            data.items = undefined;
-            const retValue = await retValuePromise;
-            debugger;
+          if(!!data.jtNodes) {
+            const jtFileBytesPromise = this.cefSharpService.convert(data.jtNodes);
+            data.jtNodes = undefined;
+            const jtFileBytes = await jtFileBytesPromise;
+
+            data.arrayBuffer = new Uint8Array(jtFileBytes).buffer;
+            data.progressValue = data.completionValue;
           }
 
           subscriber.next(data);

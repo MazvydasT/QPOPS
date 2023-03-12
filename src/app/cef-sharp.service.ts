@@ -1,18 +1,20 @@
 import { Injectable } from '@angular/core';
-import { IItem } from './item';
+import { IJTNode } from './IJTNode';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CefSharpService {
   private cefSharp = (window as any).CefSharp;
   private items2JT: {
-    convert(items: IItem[]): Promise<any>;
+    convert(jtNodes: [number, IJTNode][]): Promise<any>;
   };
 
   constructor() {
-    if(this.isInCefSharp()) {
-      this.cefSharp.BindObjectAsync(`items2JT`).then(() => this.items2JT = (window as any).items2JT);
+    if (this.isInCefSharp()) {
+      this.cefSharp
+        .BindObjectAsync(`items2JT`)
+        .then(() => (this.items2JT = (window as any).items2JT));
     }
   }
 
@@ -20,7 +22,7 @@ export class CefSharpService {
     return !!this.cefSharp;
   }
 
-  convert(items: IItem[]) {
-    return this.items2JT.convert(items);
+  convert(jtNodes: [number, IJTNode][]) {
+    return this.items2JT.convert(jtNodes);
   }
 }

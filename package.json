@@ -1,6 +1,6 @@
 {
   "name": "qpops",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "browser": {
     "fs": false,
     "path": false,
@@ -32,7 +32,6 @@
     "core-js": "^3.8.1",
     "fast-xml-parser": "^3.19.0",
     "he": "^1.2.0",
-    "ix": "^5.0.0",
     "lodash-es": "^4.17.15",
     "moment": "^2.27.0",
     "rxjs": "~6.5.4",

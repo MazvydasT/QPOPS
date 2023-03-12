@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { Component, Inject, HostListener } from '@angular/core';
 import { OverlayRef } from '@angular/cdk/overlay';
+import { Component, HostListener, Inject } from '@angular/core';
 
-import { OVERLAY_DATA } from './overlay.tokens';
 import { SafeResourceUrl } from '@angular/platform-browser';
+import { OVERLAY_DATA } from './overlay.tokens';
 
 export enum OverlayContentType {
   Video,
@@ -14,6 +14,7 @@ export enum OverlayContentType {
 export interface IOverlayContent {
   overlayContentType: OverlayContentType;
   link: string | SafeResourceUrl;
+  mimeType: string;
 }
 
 @Component({

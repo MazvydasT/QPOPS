@@ -45,6 +45,8 @@ export interface IDataObject {
 }
 
 export interface IItem {
+  id?: number;
+
   type: ContentType;
 
   title: string;

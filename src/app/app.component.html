@@ -1,48 +1,51 @@
 <ng-container *ngIf="supportsRequiredFeatures else browserLacksFeatures">
-    <!--<ng-container *ngIf="connectionService.isTopWindow() else logInConfirmation">-->
-    <div class="spaceAround" id="header-container">
-        <div class="header centered-width">
-            <ng-container *ngIf="connectionStatus$ | async as connectionStatus; else waiting">
-                <ng-container *ngIf="connectionStatus !== connectionService.ConnectionStatus.NoNetwork">
-                    <button *ngIf="swUpdate.available | async else upToDate" mat-icon-button color="accent"
-                        (click)="activateUpdate()">
-                        <mat-icon>system_update_alt</mat-icon>
-                    </button>
+  <!--<ng-container *ngIf="connectionService.isTopWindow() else logInConfirmation">-->
+  <div class="spaceAround" id="header-container">
+    <div class="header centered-width">
+      <mat-icon class="spaceAround" [title]="isInCefSharp ? 'Desktop' : 'Web'">
+        {{isInCefSharp ? 'computer' : 'web' }}
+      </mat-icon>
 
-                    <ng-template #upToDate>
-                        <mat-icon class="spaceAround"
-                            *ngIf="connectionStatus === connectionService.ConnectionStatus.LoggedIn" title="Up to date">
-                            check_circle_outline
-                        </mat-icon>
-                    </ng-template>
+      <ng-container *ngIf="connectionStatus$ | async as connectionStatus; else waiting">
+        <ng-container *ngIf="connectionStatus !== connectionService.ConnectionStatus.NoNetwork">
+          <button *ngIf="swUpdate.available | async else upToDate" mat-icon-button color="accent"
+            (click)="activateUpdate()">
+            <mat-icon>system_update_alt</mat-icon>
+          </button>
 
-                    <button class="spaceLeft"
-                        *ngIf="connectionStatus === connectionService.ConnectionStatus.NotLoggedIn" mat-icon-button
-                        color="warn" title="Click to log in" (click)="connectionService.logIn()">
-                        <mat-icon>account_circle</mat-icon>
-                    </button>
+          <ng-template #upToDate>
+            <mat-icon class="spaceAround" *ngIf="connectionStatus === connectionService.ConnectionStatus.LoggedIn"
+              title="Up to date">
+              check_circle_outline
+            </mat-icon>
+          </ng-template>
 
-                    <mat-icon class="spaceAround"
-                        *ngIf="connectionStatus === connectionService.ConnectionStatus.LoggedIn" title="Logged in">
-                        account_circle
-                    </mat-icon>
-                </ng-container>
+          <button class="spaceLeft" *ngIf="connectionStatus === connectionService.ConnectionStatus.NotLoggedIn"
+            mat-icon-button color="warn" title="Click to log in" (click)="connectionService.logIn()">
+            <mat-icon>account_circle</mat-icon>
+          </button>
 
-                <mat-icon class="spaceAround"
-                    [title]="connectionStatus === connectionService.ConnectionStatus.NoNetwork ? 'Offline' : 'Online'">
-                    {{connectionStatus === connectionService.ConnectionStatus.NoNetwork ?
-                    'wifi_off' : 'wifi_on' }}
-                </mat-icon>
-            </ng-container>
+          <mat-icon class="spaceAround" *ngIf="connectionStatus === connectionService.ConnectionStatus.LoggedIn"
+            title="Logged in">
+            account_circle
+          </mat-icon>
+        </ng-container>
 
-            <h2 class="mat-h2 noMargin spaceLeft">
-                v{{version.major}}.{{version.minor}}.{{version.patch}}
-            </h2>
-        </div>
+        <mat-icon class="spaceAround"
+          [title]="connectionStatus === connectionService.ConnectionStatus.NoNetwork ? 'Offline' : 'Online'">
+          {{connectionStatus === connectionService.ConnectionStatus.NoNetwork ?
+          'wifi_off' : 'wifi_on' }}
+        </mat-icon>
+      </ng-container>
+
+      <h2 class="mat-h2 noMargin spaceLeft">
+        v{{version.major}}.{{version.minor}}.{{version.patch}}
+      </h2>
     </div>
+  </div>
 
-    <router-outlet></router-outlet>
-    <!--</ng-container>-->
+  <router-outlet></router-outlet>
+  <!--</ng-container>-->
 </ng-container>
 
 <!--<ng-template #logInConfirmation>
@@ -52,16 +55,16 @@
 </ng-template>-->
 
 <ng-template #waiting>
-    <mat-icon title="Waiting for connection" class="spaceAround">access_time</mat-icon>
+  <mat-icon title="Waiting for connection" class="spaceAround">access_time</mat-icon>
 </ng-template>
 
 <ng-template #browserLacksFeatures>
-    <div id="browserLacksFeaturesImage"></div>
+  <div id="browserLacksFeaturesImage"></div>
 
-    <div id="browserLacksFeaturesNote">
-        <h2 id="browserLacksFeaturesNoteHeader">
-            Dear user, current browser does not support features required by this app.<br />
-            Please use one that's more up-to-date with the world ;)
-        </h2>
-    </div>
+  <div id="browserLacksFeaturesNote">
+    <h2 id="browserLacksFeaturesNoteHeader">
+      Dear user, current browser does not support features required by this app.<br />
+      Please use one that's more up-to-date with the world ;)
+    </h2>
+  </div>
 </ng-template>

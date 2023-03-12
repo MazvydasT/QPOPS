@@ -1,12 +1,12 @@
-import { IItem } from './item';
+import { IJTNode } from './IJTNode';
 
 export interface ITransformation {
-    progressValue: number;
-    completionValue: number;
+  progressValue: number;
+  completionValue: number;
 
-    arrayBuffer?: ArrayBuffer;
+  arrayBuffer?: ArrayBuffer;
 
-    errorMessage?: string;
+  errorMessage?: string;
 
-    items?: IItem[];
+  jtNodes?: [number, IJTNode][];
 }

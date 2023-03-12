@@ -2,9 +2,8 @@
 
 import { parse, X2jOptions } from 'fast-xml-parser';
 import { decode } from 'he';
-import { from, toArray } from 'ix/iterable';
-import { filter, map } from 'ix/iterable/operators';
 import { Euler, Matrix4 } from 'three/build/three.module.js';
+import { IJTNode } from './IJTNode';
 import { IInput } from './input';
 import { IDataObject, IItem } from './item';
 import { ITransformation } from './transformation';
@@ -13,10 +12,6 @@ import { items2AJT } from './transformer.2ajt';
 import { items2JT } from './transformer.2jt';
 import { items2XML } from './transformer.2xml';
 import { getFullFilePath } from './utils';
-
-
-
-
 
 addEventListener(`message`, async ({ data }: { data: IInput }) => {
   try {
@@ -191,6 +186,8 @@ const transform = async (data: IInput) => {
   const items = new Map<string, IItem>();
   const supportingDataObjects = new Map<string, IDataObject>();
 
+  let idCounter = 0;
+
   for (const objects of arrayOfObjects) {
     // eslint-disable-next-line prefer-const
     for (let [objectType, dataObjects] of Object.entries(objects)) {
@@ -215,7 +212,7 @@ const transform = async (data: IInput) => {
           !objectType.endsWith(`Prototype`) &&
           (isProduct || isResource)
         ) {
-          items.set(id, {
+          const item: IItem = {
             type: isProduct ? ContentType.Product : ContentType.Resource,
             dataObject,
             title: getTitle(dataObject.number, dataObject.name),
@@ -225,7 +222,13 @@ const transform = async (data: IInput) => {
             parent: null,
             transformationMatrix: null,
             attributes: new Map(),
-          });
+          };
+
+          if (data.isInCefSharp) {
+            item.id = idCounter++;
+          }
+
+          items.set(id, item);
         } else {
           supportingDataObjects.set(id, dataObject);
         }
@@ -452,47 +455,59 @@ const transform = async (data: IInput) => {
     }
   }
 
-  items.set(`${Date.now}-root`, root);
-
-  let outputArrayBuffer: ArrayBufferLike;
-
-  if(data.isInCefSharp)
-  {
-    postMessage(
-      {
-        completionValue: COMPLETION_VALUE,
-        progressValue: 5,
-        items: toArray(from(items.values()).pipe(
-          map(item => {
-            item.attributes = Array.from(item.attributes.entries()) as any as Map<string, any>;
-            return item;
-          }),
-          filter(item => item.parent == null)
-        ))
-      } as ITransformation
-    );
-
-    return;
+  if (data.isInCefSharp) {
+    root.id = idCounter++;
   }
 
-  else
-  {
-    outputArrayBuffer =
+  items.set(`${Date.now()}-root`, root);
+
+  if (data.isInCefSharp) {
+    const jtNodeLookup = item2JTNodeLookup(root, new Map());
+    const jtNodes = Array.from(jtNodeLookup.entries());
+
+    postMessage({
+      completionValue: COMPLETION_VALUE,
+      progressValue: 5,
+      jtNodes,
+    } as ITransformation);
+  } else {
+    const outputArrayBuffer =
       outputType === OutputType.JT
         ? items2JT(items)
         : outputType === OutputType.PLMXML
         ? items2XML(items)
         : items2AJT(items);
-  }
 
-  postMessage(
-    {
-      completionValue: COMPLETION_VALUE,
-      progressValue: 6,
-      arrayBuffer: outputArrayBuffer,
-    } as ITransformation,
-    [outputArrayBuffer]
-  );
+    postMessage(
+      {
+        completionValue: COMPLETION_VALUE,
+        progressValue: 6,
+        arrayBuffer: outputArrayBuffer,
+      } as ITransformation,
+      [outputArrayBuffer]
+    );
+  }
+};
+
+const item2JTNodeLookup = (item: IItem, inLookup: Map<number, IJTNode>) => {
+  const jtNode: IJTNode = {
+    isRoot: !item.parent,
+    name: item.title,
+    transformationMatrix: item.transformationMatrix,
+    childrenIDs: item.children?.map((child) => {
+      item2JTNodeLookup(child, inLookup);
+      return child.id;
+    }),
+    referencedFile: item.filePath,
+    referencedFileIsPart: item.fileIsPart,
+    attributes: !!item.attributes
+      ? Array.from(item.attributes.entries())
+      : undefined,
+  };
+
+  inLookup.set(item.id, jtNode);
+
+  return inLookup;
 };
 
 const deleteEmptyItem = (

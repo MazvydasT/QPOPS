@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { SwUpdate } from '@angular/service-worker';
 import { BrowserFeatureDetectionService } from './browser-feature-detection.service';
+import { CefSharpService } from './cef-sharp.service';
 import { ConnectionService } from './connection.service';
 import { VersionService } from './version.service';
 
@@ -14,6 +15,7 @@ export class AppComponent {
   version = this.versionService.getVersion();
 
   connectionStatus$ = this.connectionService.getConnectionStatus();
+  isInCefSharp = this.cefSharpService.isInCefSharp();
 
   supportsRequiredFeatures = this.browserFeatureDetectionService.supportsRequiredFeatures();
 
@@ -21,7 +23,8 @@ export class AppComponent {
     private browserFeatureDetectionService: BrowserFeatureDetectionService,
     public connectionService: ConnectionService,
     public swUpdate: SwUpdate,
-    public versionService: VersionService
+    public versionService: VersionService,
+    private cefSharpService: CefSharpService
   ) {
 
     //this.redirectService.redirectToLoginIfNeeded();

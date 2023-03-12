@@ -9,7 +9,7 @@
 
     <video class="global-width" (canplay)="loading = false" [style.opacity]="loading ? 0 : 1" controls preload="auto"
         autoplay muted loop>
-        <source [src]="overlayContent.link" type="video/mp4">
+        <source [src]="overlayContent.link" [type]="overlayContent.mimeType">
     </video>
 </ng-container>
 
