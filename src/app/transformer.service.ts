@@ -13,7 +13,7 @@ import { VersionService } from './version.service';
 })
 export class TransformerService {
 
-  private readonly maxConcurancy = (navigator?.hardwareConcurrency ?? 4) - 1;
+  private readonly maxConcurancy = this.cefSharpService.isInCefSharp() ? 1 : (navigator?.hardwareConcurrency ?? 4) - 1;
   private jobsInProgress = 0;
 
   private readonly queue = new Array<() => void>();
