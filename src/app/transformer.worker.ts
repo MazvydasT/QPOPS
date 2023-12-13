@@ -352,7 +352,9 @@ const transform = async (data: IInput) => {
 
     item.attributes.set(`TCe_Revision`, tceRevision ?? ``);
 
-    item.attributes.set(`Owner CDSID`, dataObject?.Comment2 ?? ``);
+    item.attributes.set(`Comment`, dataObject?.comment ?? ``);
+    item.attributes.set(`Comment1`, dataObject?.Comment1 ?? ``);
+    item.attributes.set(`Comment2`, dataObject?.Comment2 ?? ``);
 
     item.attributes.set(
       `ActiveInCurrentVersion`,

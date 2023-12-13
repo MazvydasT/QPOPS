@@ -39,6 +39,8 @@ export interface IDataObject {
 
   TCe_Revision?: string;
 
+  comment?: string;
+  Comment1?: string;
   Comment2?: string;
 
   ActiveInCurrentVersion?: string;
