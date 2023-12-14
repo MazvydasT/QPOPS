@@ -282,10 +282,10 @@ const transform = async (data: IInput) => {
       const prototypeObject = supportingDataObjects.get(prototype);
 
       if (prototypeObject) {
-        item.title = getTitle(
+        /*item.title = getTitle(
           prototypeObject.catalogNumber,
           prototypeObject.name
-        );
+        );*/
 
         item.filePath = getFullFilePath(
           data.configuration.sysRootPath,
